@@ -1,0 +1,8 @@
+*.o
+*.ppu
+*.lps
+base
+*.compiled
+*.rsj
+*.or
+
