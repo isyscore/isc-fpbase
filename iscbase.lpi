@@ -52,6 +52,16 @@
       <OtherUnitFiles Value="iscbase;/Applications/Lazarus/components/lazutils/lib/x86_64-darwin/;/Applications/Lazarus/packager/units/x86_64-darwin/"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
+    <Linking>
+      <Debugging>
+        <UseHeaptrc Value="True"/>
+      </Debugging>
+    </Linking>
+    <Other>
+      <CompilerMessages>
+        <IgnoredMessages idx6058="True" idx3124="True" idx3123="True"/>
+      </CompilerMessages>
+    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">

@@ -1,0 +1,193 @@
+{
+  "version": "2.0.0",
+  "options": {
+    "cwd": "${workspaceFolder}",
+    "env": {
+      "FPC_COMMAND": "/usr/local/bin/fpc",
+      "PROJECTFILE": "${relativeFile}",
+      "PROJECTBASE": "${fileBasenameNoExtension}",
+      "OUTPUT": ".build",
+      "DEBUG": ".build/debug",
+      "RELEASE": ".build/release"
+    }
+  },
+  "tasks": [
+    {
+      "label": "fpc: Build Debug",
+      "type": "shell",
+      "group": "build",
+      "command": "${FPC_COMMAND}",
+      "args": [
+        "${PROJECTFILE}",
+        "-Mobjfpc",
+        "-Scghi",
+        "-vewnhibq",
+        "-O-",
+        "-Xg",
+        "-B",
+        "-glpsw2",
+        "-godwarfcpp",
+        "-Fu/Applications/Lazarus/components/lazutils/lib/x86_64-darwin",
+        "-Fu/Applications/Lazarus/packager/units/x86_64-darwin",
+        "-Fuiscbase",
+        "-FE${DEBUG}",
+        "-FU${OUTPUT}"
+      ],
+      "presentation": {
+        "focus": true
+      },
+      "problemMatcher": {
+        "owner": "objectpascal",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "kind": "location",
+          "regexp": "^(.*)\\((\\d.*),(\\d.*)\\) (Warning|Error|Fatal): (.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5,
+          "loop": true
+        }
+      }
+    },
+    {
+      "label": "fpc: Build Release",
+      "type": "shell",
+      "group": "build",
+      "command": "${FPC_COMMAND}",
+      "args": [
+        "${PROJECTFILE}",
+        "-Mobjfpc",
+        "-Scghi",
+        "-vewnhibq",
+        "-CX",
+        "-O3",
+        "-XXs",
+        "-B",
+        "-v",
+        "-Fu/Applications/Lazarus/components/lazutils/lib/x86_64-darwin",
+        "-Fu/Applications/Lazarus/packager/units/x86_64-darwin",
+        "-Fuiscbase",
+        "-FE${RELEASE}",
+        "-FU${OUTPUT}"
+      ],
+      "presentation": {
+        "focus": true
+      },
+      "problemMatcher": {
+        "owner": "objectpascal",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "kind": "location",
+          "regexp": "^(.*)\\((\\d.*),(\\d.*)\\) (Warning|Error|Fatal): (.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5,
+          "loop": true
+        }
+      }
+    },
+    {
+      "label": "fpc: Syntax Check",
+      "type": "shell",
+      "group": "build",
+      "command": "${FPC_COMMAND}",
+      "args": [
+        "${PROJECTFILE}",
+        "-Mobjfpc",
+        "-Scghi",
+        "-vewnhibq",
+        "-B",
+        "-v",
+        "-s",
+        "-Fu/Applications/Lazarus/components/lazutils/lib/x86_64-darwin",
+        "-Fu/Applications/Lazarus/packager/units/x86_64-darwin",
+        "-Fuiscbase",
+        "-FE${OUTPUT}",
+        "-FU${OUTPUT}"
+      ],
+      "presentation": {
+        "focus": true
+      },
+      "problemMatcher": {
+        "owner": "objectpascal",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "kind": "location",
+          "regexp": "^(.*)\\((\\d.*),(\\d.*)\\) (Warning|Error|Fatal): (.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5,
+          "loop": true
+        }
+      }
+    },
+    {
+      "label": "fpc: Instant Run",
+      "type": "shell",
+      "group": "test",
+      "command": "instantfpc",
+      "args": [
+        "${PROJECTFILE}",
+        "-B"
+      ],
+      "presentation": {
+        "focus": true
+      },
+      "problemMatcher": {
+        "owner": "objectpascal",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "kind": "location",
+          "regexp": "^(.*)\\((\\d.*),(\\d.*)\\) (Warning|Error|Fatal): (.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5,
+          "loop": true
+        }
+      }
+    },
+    {
+      "label": "fpc: Execute Binary",
+      "type": "shell",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "command": "./${DEBUG}/${PROJECTBASE}",
+      "args": [],
+      "presentation": {
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "fpc: Clean",
+      "type": "shell",
+      "command": "rm -fr ${OUTPUT} && mkdir -p ${DEBUG} && mkdir -p ${RELEASE}",
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

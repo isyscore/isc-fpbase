@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "LLDB Debug",
+      "type": "lldb",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "program": ".build/debug/${fileBasenameNoExtension}",
+      "preLaunchTask": "fpc: Build Debug",
+      "postDebugTask": "fpc: Clean"
+    }
+  ]
+}
