@@ -87,8 +87,6 @@ end;
 
 constructor TInnerThread.Create(InnerData: D;
   AMethod: specialize TISCThreadMethod<D, T>; ATermMethod: specialize TISCTerminateMethod<T>);
-var
-  i: Integer;
 begin
   inherited Create(True);
   FData:= InnerData;

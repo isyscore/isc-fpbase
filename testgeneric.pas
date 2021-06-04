@@ -8,6 +8,7 @@ uses
   Classes, SysUtils, ISCGeneric, fgl;
 
 procedure doTestGeneric();
+procedure doTestGeneric2();
 
 implementation
 
@@ -76,6 +77,32 @@ procedure doTestGeneric();
 begin
   doTestGenericList();
   doTestGenericMap();
+end;
+
+function gmap2Impl(item: Integer): string;
+begin
+  Exit('item %d'.Format([item]));
+end;
+
+function gjoin2Impl(item: Integer): string;
+begin
+  Exit(item.ToString());
+end;
+
+procedure doTestGeneric2();
+var
+  ia: TIntArray = (1, 2, 3, 4, 5, 4, 3, 2, 1, 0);
+  ret: Boolean;
+  d: TIntArray;
+  str: string;
+begin
+  ret := specialize ISCContains<Integer>(ia, 2);
+  WriteLn('c2: ' + BoolToStr(ret, 'true', 'false'));
+  ret := specialize ISCContains<Integer>(ia, 6);
+  WriteLn('c6: ' + BoolToStr(ret, 'true', 'false'));
+  d := specialize ISCDistinct<Integer>(ia);
+  str := specialize ISCJoinTo<Integer>(d, ',', '[', ']', @gjoin2Impl);
+  WriteLn(str);
 end;
 
 

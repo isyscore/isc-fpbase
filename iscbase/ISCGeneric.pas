@@ -11,6 +11,14 @@ uses
   Classes, SysUtils, fgl;
 
 type
+  TObjectArray = array of TObject;
+  TIntArray = array of Integer;
+  TFloatArray = array of Double;
+  TBooleanArray = array of Boolean;
+  TInt64Array = array of Int64;
+
+type
+  generic TFPGArray<T> = array of T;
   { TISCPair }
 
   generic TISCPair<A, B> = class
@@ -49,6 +57,7 @@ type
   generic TJoinToMethod<T> = function (item: T): string;
   generic TMapConditionMethod<K, V> = function (key: K; value: V): Boolean;
   generic TMapForeachMethod<K, V> = procedure (key: K; value: V);
+  generic TMapMapMethod<T, K, V> = function (key: K; value: V): T;
 
   { TISCList }
 
@@ -141,11 +150,13 @@ generic function ISCReduceIndexed<S, T>(list: specialize TFPGList<T>; block: spe
 generic function ISCMinus<T>(list: specialize TFPGList<T>; otherList: specialize TFPGList<T>): specialize TFPGList<T>;
 generic function ISCPlus<T>(list: specialize TFPGList<T>; otherList: specialize TFPGList<T>): specialize TFPGList<T>;
 generic function ISCJoinTo<T>(list: specialize TFPGList<T>; separator: string; block: specialize TJoinToMethod<T>): string;
+generic function ISCJoinTo<T>(list: specialize TFPGList<T>; separator: string; prefix: string; postfix: string; block: specialize TJoinToMethod<T>): string;
 
 // generic map
 generic procedure ISCFreeMap<K, V>(map: specialize TFPGMap<K, V>);
 generic procedure ISCFreeMapKey<K, V>(map: specialize TFPGMap<K, V>);
 generic procedure ISCFreeValue<K, V>(map: specialize TFPGMap<K, V>);
+generic function ISCMap<T, K, V>(map: specialize TFPGMap<K, V>; block: specialize TMapMapMethod<T, K, V>): specialize TFPGList<T>;
 generic function ISCToList<K, V>(map: specialize TFPGMap<K, V>): specialize TFPGList<specialize TISCPair<K, V>>;
 generic function ISCAll<K, V>(map: specialize TFPGMap<K, V>; block: specialize TMapConditionMethod<K, V>): Boolean;
 generic function ISCAny<K, V>(map: specialize TFPGMap<K, V>; block: specialize TMapConditionMethod<K, V>): Boolean;
@@ -159,7 +170,495 @@ generic function ISCFilterNot<K, V>(map: specialize TFPGMap<K, V>; block: specia
 generic function ISCKeys<K, V>(map: specialize TFPGMap<K, V>): specialize TFPGList<K>;
 generic function ISCValues<K, V>(map: specialize TFPGMap<K, V>): specialize TFPGList<V>;
 
+// array
+generic function ISCContains<T>(arr: specialize TFPGArray<T>; item: T): Boolean;
+generic function ISCFilter<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>): specialize TFPGArray<T>;
+generic function ISCFilterIndexed<T>(arr: specialize TFPGArray<T>; block: specialize TFilterIndexedMethod<T>): specialize TFPGArray<T>;
+generic function ISCFilterNot<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>): specialize TFPGArray<T>;
+generic function ISCFilterNotIndexed<T>(arr: specialize TFPGArray<T>; block: specialize TFilterIndexedMethod<T>): specialize TFPGArray<T>;
+generic function ISCMap<T, R>(arr: specialize TFPGArray<T>; block: specialize TMapMethod<T, R>): specialize TFPGArray<R>;
+generic function ISCMapIndexed<T, R>(arr: specialize TFPGArray<T>; block: specialize TMapIndexedMethod<T, R>): specialize TFPGArray<R>;
+generic function ISCIndexOf<T>(arr: specialize TFPGArray<T>; item: T): Integer;
+generic function ISCLastIndexOf<T>(arr: specialize TFPGArray<T>; item: T): Integer;
+generic function ISCIndexOfFirst<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>): Integer;
+generic function ISCIndexOfLast<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>): Integer;
+generic function ISCReduce<S, T>(arr: specialize TFPGArray<T>; block: specialize TReduceMethod<S, T>): S;
+generic function ISCReduceIndexed<S, T>(arr: specialize TFPGArray<T>; block: specialize TReduceIndexedMethod<S, T>): S;
+generic function ISCFind<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>): T;
+generic function ISCFindLast<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>): T;
+generic function ISCDrop<T>(arr: specialize TFPGArray<T>; n: Integer): specialize TFPGArray<T>;
+generic function ISCDropLast<T>(arr: specialize TFPGArray<T>; n: Integer): specialize TFPGArray<T>;
+generic function ISCSubArray<T>(arr: specialize TFPGArray<T>; startIndex: Integer): specialize TFPGArray<T>;
+generic function ISCSubArray<T>(arr: specialize TFPGArray<T>; startIndex: Integer; endIndex: Integer): specialize TFPGArray<T>;
+generic function ISCTake<T>(arr: specialize TFPGArray<T>; n: Integer): specialize TFPGArray<T>;
+generic function ISCTakeLast<T>(arr: specialize TFPGArray<T>; n: Integer): specialize TFPGArray<T>;
+generic function ISCDistinct<T>(arr: specialize TFPGArray<T>): specialize TFPGArray<T>;
+generic function ISCAll<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>) : Boolean;
+generic function ISCAny<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>) : Boolean;
+generic function ISCNone<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>) : Boolean;
+generic function ISCCount<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>) : Integer;
+generic procedure ISCForEach<T>(arr: specialize TFPGArray<T>; block: specialize TForeachMethod<T>);
+generic procedure ISCForEachIndexed<T>(arr: specialize TFPGArray<T>; block: specialize TForeachIndexedMethod<T>);
+generic function ISCMinus<T>(arr: specialize TFPGArray<T>; otherArray: specialize TFPGArray<T>): specialize TFPGArray<T>;
+generic function ISCPlus<T>(arr: specialize TFPGArray<T>; otherArray: specialize TFPGArray<T>): specialize TFPGArray<T>;
+generic function ISCJoinTo<T>(arr: specialize TFPGArray<T>; separator: string; block: specialize TJoinToMethod<T>): string;
+generic function ISCJoinTo<T>(arr: specialize TFPGArray<T>; separator: string; prefix: string; postfix: string; block: specialize TJoinToMethod<T>): string;
+
 implementation
+
+generic function ISCJoinTo<T>(arr: specialize TFPGArray<T>; separator: string; block: specialize TJoinToMethod<T>): string;
+var
+  i: Integer;
+  ret: string = '';
+begin
+  for i :=  0 to Length(arr)- 1 do begin
+    if (i = 0) then begin
+      ret += block(arr[i]);
+    end else begin
+      ret += separator + block(arr[i]);
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic function ISCJoinTo<T>(arr: specialize TFPGArray<T>; separator: string; prefix: string; postfix: string; block: specialize TJoinToMethod<T>): string;
+var
+  ret: string;
+begin
+  ret := specialize ISCJoinTo<T>(arr, separator, block);
+  Exit(prefix + ret + postfix);
+end;
+
+generic function ISCMinus<T>(arr: specialize TFPGArray<T>; otherArray: specialize TFPGArray<T>): specialize TFPGArray<T>;
+var
+  i: Integer;
+  ret: specialize TFPGArray<T> = nil;
+  len: Integer = 0;
+begin
+  SetLength(ret, 0);
+  for i := 0 to Length(arr) - 1 do begin
+    if (specialize ISCIndexOf<T>(otherArray, arr[i]) = -1) then begin
+      Inc(len);
+      SetLength(ret, len);
+      ret[len - 1] := arr[i];
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic function ISCPlus<T>(arr: specialize TFPGArray<T>; otherArray: specialize TFPGArray<T>): specialize TFPGArray<T>;
+var
+  i: Integer;
+  ret: specialize TFPGArray<T> = nil;
+  len: Integer = 0;
+begin
+  SetLength(ret, Length(arr));
+  for i := 0 to Length(arr) - 1 do begin
+    ret[i] := arr[i];
+  end;
+  len := Length(ret);
+  for i := 0 to Length(otherArray) - 1 do begin
+    if (specialize ISCIndexOf<T>(ret, otherArray[i]) = -1) then begin
+      Inc(len);
+      SetLength(ret, len);
+      ret[len - 1] := otherArray[i];
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic procedure ISCForEach<T>(arr: specialize TFPGArray<T>; block: specialize TForeachMethod<T>);
+var
+  i: Integer;
+begin
+  for i:= 0 to Length(arr) - 1 do begin
+    block(arr[i]);
+  end;
+end;
+
+generic procedure ISCForEachIndexed<T>(arr: specialize TFPGArray<T>; block: specialize TForeachIndexedMethod<T>);
+var
+  i: Integer;
+begin
+  for i:= 0 to Length(arr) - 1 do begin
+    block(i, arr[i]);
+  end;
+end;
+
+generic function ISCAll<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>) : Boolean;
+var
+  ret: Boolean = True;
+  i: Integer;
+begin
+  for i := 0 to Length(arr) - 1 do begin
+    if (not block(arr[i])) then begin
+      ret := False;
+      Break;
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic function ISCAny<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>) : Boolean;
+var
+  ret: Boolean = False;
+  i: Integer;
+begin
+  for i := 0 to Length(arr) - 1 do begin
+    if (block(arr[i])) then begin
+      ret := True;
+      Break;
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic function ISCNone<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>) : Boolean;
+var
+  ret: Boolean = True;
+  i: Integer;
+begin
+  for i := 0 to Length(arr) - 1 do begin
+    if (block(arr[i])) then begin
+      ret := False;
+      Break;
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic function ISCCount<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>) : Integer;
+var
+  ret: Integer = 0;
+  i: Integer;
+begin
+  for i := 0 to Length(arr) - 1 do begin
+    if (block(arr[i])) then begin
+      Inc(ret);
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic function ISCDistinct<T>(arr: specialize TFPGArray<T>): specialize TFPGArray<T>;
+var
+  ret: specialize TFPGArray<T> = nil;
+  i: Integer;
+  len: Integer = 0;
+begin
+  SetLength(ret, 0);
+  for i := 0 to Length(arr) - 1 do begin
+    if (specialize ISCIndexOf<T>(ret, arr[i]) = -1) then begin
+      Inc(len);
+      SetLength(ret, len);
+      ret[len - 1] := arr[i];
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic function ISCTake<T>(arr: specialize TFPGArray<T>; n: Integer): specialize TFPGArray<T>;
+var
+  ret: specialize TFPGArray<T> = nil;
+  i: Integer;
+begin
+  SetLength(ret, n);
+  for i := 0 to n - 1 do begin
+    ret[i] := arr[i];
+  end;
+  Exit(ret);
+end;
+
+generic function ISCTakeLast<T>(arr: specialize TFPGArray<T>; n: Integer): specialize TFPGArray<T>;
+var
+  ret: specialize TFPGArray<T>;
+  i: Integer;
+begin
+  SetLength(ret, n);
+  for i := Length(arr) - n to Length(arr) - 1 do begin
+    ret[i - (Length(arr) - n)] := arr[i];
+  end;
+  Exit(ret);
+end;
+
+generic function ISCSubArray<T>(arr: specialize TFPGArray<T>; startIndex: Integer): specialize TFPGArray<T>;
+var
+  ret: specialize TFPGArray<T> = nil;
+  i: Integer;
+begin
+  SetLength(ret, Length(arr) - startIndex);
+  for i := startIndex to Length(arr) - 1 do begin
+    ret[i - startIndex] := arr[i];
+  end;
+  Exit(ret);
+end;
+
+generic function ISCSubArray<T>(arr: specialize TFPGArray<T>; startIndex: Integer; endIndex: Integer): specialize TFPGArray<T>;
+var
+  ret: specialize TFPGArray<T> = nil;
+  i: Integer;
+begin
+  SetLength(ret, endIndex - startIndex);
+  for i := startIndex to endIndex - 1 do begin
+    ret[i - startIndex] := arr[i];
+  end;
+  Exit(ret);
+end;
+
+generic function ISCDrop<T>(arr: specialize TFPGArray<T>; n: Integer): specialize TFPGArray<T>;
+var
+  i: Integer;
+  ret: specialize TFPGArray<T> = nil;
+begin
+  SetLength(ret, Length(arr) - n);
+  for i := n to Length(arr) - 1 do begin
+    ret[i - n] := arr[i];
+  end;
+  Exit(ret);
+end;
+
+generic function ISCDropLast<T>(arr: specialize TFPGArray<T>; n: Integer): specialize TFPGArray<T>;
+var
+  i: Integer;
+  ret: specialize TFPGArray<T> = nil;
+begin
+  SetLength(ret, Length(arr) - n);
+  for i := 0 to Length(arr) - 1 - n do begin
+    ret[i] := arr[i];
+  end;
+  Exit(ret);
+end;
+
+generic function ISCFind<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>): T;
+var
+  ret: T;
+  i: Integer;
+begin
+  for i := Length(arr) - 1 downto 0 do begin
+    if (block(arr[i])) then begin
+      ret := arr[i];
+      Break;
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic function ISCFindLast<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>): T;
+var
+  ret: T;
+  i: Integer;
+begin
+  for i := 0 to Length(arr) - 1 do begin
+    if (block(arr[i])) then begin
+      ret := arr[i];
+      Break;
+    end;
+  end;
+  Exit(ret);
+
+end;
+
+generic function ISCReduce<S, T>(arr: specialize TFPGArray<T>; block: specialize TReduceMethod<S, T>): S;
+var
+  ret: S;
+  i: Integer;
+begin
+  if (Length(arr) > 0) then begin
+    ret := arr[0];
+  end;
+  for i:= 1 to Length(arr) - 1 do begin
+    ret := block(ret, arr[i]);
+  end;
+  Exit(ret);
+end;
+
+generic function ISCReduceIndexed<S, T>(arr: specialize TFPGArray<T>; block: specialize TReduceIndexedMethod<S, T>): S;
+var
+  ret: S;
+  i: Integer;
+begin
+  if (Length(arr) > 0) then begin
+    ret := arr[0];
+  end;
+  for i:= 1 to Length(arr) - 1 do begin
+    ret := block(i, ret, arr[i]);
+  end;
+  Exit(ret);
+end;
+
+generic function ISCIndexOf<T>(arr: specialize TFPGArray<T>; item: T): Integer;
+var
+  i: Integer;
+  idx: Integer = -1;
+begin
+  for i := 0 to Length(arr) - 1 do begin
+    if (arr[i] = item) then begin
+      idx := i;
+      Break;
+    end;
+  end;
+  Exit(idx);
+end;
+
+generic function ISCLastIndexOf<T>(arr: specialize TFPGArray<T>; item: T): Integer;
+var
+  i: Integer;
+  idx: Integer = -1;
+begin
+  for i := Length(arr) - 1 downto 0 do begin
+    if (arr[i] = item) then begin
+      idx := i;
+      Break;
+    end;
+  end;
+  Exit(idx);
+end;
+
+generic function ISCIndexOfFirst<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>): Integer;
+var
+  i: Integer;
+  idx: Integer = -1;
+begin
+  for i := 0 to Length(arr) - 1 do begin
+    if (block(arr[i])) then begin
+      idx := i;
+      Break;
+    end;
+  end;
+  Exit(idx);
+end;
+
+generic function ISCIndexOfLast<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>): Integer;
+var
+  i: Integer;
+  idx: Integer = -1;
+begin
+  for i := Length(arr) - 1 downto 0 do begin
+    if (block(arr[i])) then begin
+      idx := i;
+      Break;
+    end;
+  end;
+  Exit(idx);
+end;
+
+generic function ISCMap<T, R>(arr: specialize TFPGArray<T>; block: specialize TMapMethod<T, R>): specialize TFPGArray<R>;
+var
+  ret: specialize TFPGArray<R> = nil;
+  i: Integer;
+begin
+  SetLength(ret, Length(arr));
+  for i:= 0 to Length(arr) - 1 do begin
+    ret[i] := block(arr[i]);
+  end;
+  Exit(ret);
+end;
+
+generic function ISCMapIndexed<T, R>(arr: specialize TFPGArray<T>; block: specialize TMapIndexedMethod<T, R>): specialize TFPGArray<R>;
+var
+  ret: specialize TFPGArray<R> = nil;
+  i: Integer;
+begin
+  SetLength(ret, Length(arr));
+  for i:= 0 to Length(arr) - 1 do begin
+    ret[i] := block(i, arr[i]);
+  end;
+  Exit(ret);
+end;
+
+generic function ISCFilter<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>): specialize TFPGArray<T>;
+var
+  ret: specialize TFPGArray<T> = nil;
+  i: Integer;
+  len: Integer = 0;
+begin
+  SetLength(ret, 0);
+  for i:= 0 to Length(arr) - 1 do begin
+    if (block(arr[i])) then begin
+      Inc(len);
+      SetLength(ret, len);
+      ret[len - 1] := arr[i];
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic function ISCFilterIndexed<T>(arr: specialize TFPGArray<T>; block: specialize TFilterIndexedMethod<T>): specialize TFPGArray<T>;
+var
+  ret: specialize TFPGArray<T> = nil;
+  i: Integer;
+  len: Integer = 0;
+begin
+  SetLength(ret, 0);
+  for i:= 0 to Length(arr) - 1 do begin
+    if (block(i, arr[i])) then begin
+      Inc(len);
+      SetLength(ret, len);
+      ret[len - 1] := arr[i];
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic function ISCFilterNot<T>(arr: specialize TFPGArray<T>; block: specialize TFilterMethod<T>): specialize TFPGArray<T>;
+var
+  ret: specialize TFPGArray<T> = nil;
+  i: Integer;
+  len: Integer = 0;
+begin
+  SetLength(ret, 0);
+  for i:= 0 to Length(arr) - 1 do begin
+    if (not block(arr[i])) then begin
+      Inc(len);
+      SetLength(ret, len);
+      ret[len - 1] := arr[i];
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic function ISCFilterNotIndexed<T>(arr: specialize TFPGArray<T>; block: specialize TFilterIndexedMethod<T>): specialize TFPGArray<T>;
+var
+  ret: specialize TFPGArray<T> = nil;
+  i: Integer;
+  len: Integer = 0;
+begin
+  SetLength(ret, 0);
+  for i:= 0 to Length(arr) - 1 do begin
+    if (not block(i, arr[i])) then begin
+      Inc(len);
+      SetLength(ret, len);
+      ret[len - 1] := arr[i];
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic function ISCContains<T>(arr: specialize TFPGArray<T>; item: T): Boolean;
+var
+  ret: Boolean = False;
+  i: Integer;
+begin
+  for i := 0 to Length(arr) - 1 do begin
+    if (arr[i] = item) then begin
+      ret := True;
+      Break;
+    end;
+  end;
+  Exit(ret);
+end;
+
+generic function ISCMap<T, K, V>(map: specialize TFPGMap<K, V>; block: specialize TMapMapMethod<T, K, V>): specialize TFPGList<T>;
+var
+  ret: specialize TFPGList<T>;
+  i: Integer;
+begin
+  ret := specialize TFPGList<T>.Create;
+  for i := 0 to map.Count - 1 do begin
+    ret.Add(block(map.keys[i], map.Data[i]));
+  end;
+  Exit(ret);
+end;
 
 generic function ISCMapOf<K, V>(keys: array of K; values: array of V): specialize TFPGMap<K, V>;
 var
@@ -390,6 +889,14 @@ begin
     end;
   end;
   Exit(ret);
+end;
+
+generic function ISCJoinTo<T>(list: specialize TFPGList<T>; separator: string; prefix: string; postfix: string; block: specialize TJoinToMethod<T>): string;
+var
+  ret: string;
+begin
+  ret := specialize ISCJoinTo<T>(list, separator, block);
+  Exit(prefix + ret + postfix);
 end;
 
 generic function ISCMinus<T>(list: specialize TFPGList<T>; otherList: specialize TFPGList<T>): specialize TFPGList<T>;
