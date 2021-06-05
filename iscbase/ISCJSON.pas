@@ -47,7 +47,6 @@ type
     property OptObjects[Index: Integer]: TJSONObject read GetOptObjects;
   end;
 
-
 generic function ISCObjectToJSONString<T: TObject>(AObj: T): string;
 generic function ISCObjectToJSONObject<T: TObject>(AObj: T): TJSONObject;
 generic function ISCJSONStringToObject<T: TObject>(jsonstr: string): T;

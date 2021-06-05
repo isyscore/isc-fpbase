@@ -43,9 +43,9 @@ type
   end;
 
 { ISCThreadExecute for Non-GUI operating, "OnTerminate" callbacks in SUB-THREAD }
-generic function ISCThreadExecute<E, U>(AData: E; AMethod: specialize TISCThreadMethod<E, U>; AOnTerminate: specialize TISCTerminateMethod<U> = nil; APriority: TThreadPriority = tpNormal): TThreadID;
+generic function ISCThreadExecute<E, U>(AData: E; AMethod: specialize TISCThreadMethod<E, U>; AOnTerminate: specialize TISCTerminateMethod<U> = nil; APriority: TThreadPriority = tpNormal): TThread;
 { ISCThreadExecuteGUI for GUI operating, "OnTerminate" callbacks in UI-THREAD }
-generic function ISCThreadExecuteGUI<E, U>(AData: E; AMethod: specialize TISCThreadMethodGUI<E, U>; AOnTerminate: specialize TISCTerminateMethodGUI<U> = nil; APriority: TThreadPriority = tpNormal): TThreadID;
+generic function ISCThreadExecuteGUI<E, U>(AData: E; AMethod: specialize TISCThreadMethodGUI<E, U>; AOnTerminate: specialize TISCTerminateMethodGUI<U> = nil; APriority: TThreadPriority = tpNormal): TThread;
 
 implementation
 
@@ -94,20 +94,20 @@ begin
   FOutMethod:= ATermMethod;
 end;
 
-generic function ISCThreadExecute<E, U>(AData: E; AMethod: specialize TISCThreadMethod<E, U>; AOnTerminate: specialize TISCTerminateMethod<U>; APriority: TThreadPriority): TThreadID;
+generic function ISCThreadExecute<E, U>(AData: E; AMethod: specialize TISCThreadMethod<E, U>; AOnTerminate: specialize TISCTerminateMethod<U>; APriority: TThreadPriority): TThread;
 begin
   with specialize TInnerThread<E, U>.Create(AData, AMethod, AOnTerminate) do begin
     Priority := APriority;
-    Result := ThreadID;
+    Result := Self;
     Start();
   end;
 end;
 
-generic function ISCThreadExecuteGUI<E, U>(AData: E; AMethod: specialize TISCThreadMethodGUI<E, U>; AOnTerminate: specialize TISCTerminateMethodGUI<U>; APriority: TThreadPriority): TThreadID;
+generic function ISCThreadExecuteGUI<E, U>(AData: E; AMethod: specialize TISCThreadMethodGUI<E, U>; AOnTerminate: specialize TISCTerminateMethodGUI<U>; APriority: TThreadPriority): TThread;
 begin
   with specialize TInnerThreadGUI<E, U>.Create(AData, AMEthod, AOnTerminate) do begin
     Priority := APriority;
-    Result := ThreadID;
+    Result := Self;
     Start();
   end;
 end;

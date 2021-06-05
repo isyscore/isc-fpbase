@@ -17,22 +17,32 @@ const
   MIME_GIF = 'image/gif';
 
 type
+  THttpMethod = (hmGet, hmPost, hmPut, hmDelete, hmOption);
   TISCDownloadProgress = procedure (AUrl: string; ASavePath: string; ACurrentProgress: Int64; ATotalLength: Int64);
+  TISCHttpCallback = procedure(AUrl: string; ACode: Integer; ABody: string; ACookie: specialize TFPGMap<string, string>; AError: string);
 
 function ISCHttpGet(AUrl: string; AHeaders: specialize TFPGMap<string, string> = nil): string;
 function ISCHttpPost(AUrl: string; AParam: string; AHeaders: specialize TFPGMap<string, string> = nil): string;
 function ISCHttpPost(AUrl: string; AParam: specialize TFPGMap<String, String>; AHeaders: specialize TFPGMap<string, string> = nil): string;
+
+function ISCHttpRequest(AUrl: string; AMethod: THttpMethod;
+  AQueryParam: string = '';
+  ADataParam: string = '{}';
+  AHeaders: specialize TFPGMap<string, string> = nil;
+  ACalllback: TISCHttpCallback = nil
+): string;
+
 function ISCDownloadFile(AUrl: string; ASavePath: string; AHeaders: specialize TFPGMap<string, string> = nil; AProgress: TISCDownloadProgress = nil): Boolean;
 function ISCGetLocalIPMac(out AIp: string; out AMacAddr: string): Boolean;
 
-procedure allowCors(AReq: TRequest; AResp: TResponse);
+procedure ISCAllowCors(AReq: TRequest; AResp: TResponse);
 
 implementation
 
 uses
   ISCGeneric;
 
-procedure allowCors(AReq: TRequest; AResp: TResponse);
+procedure ISCAllowCors(AReq: TRequest; AResp: TResponse);
 var
   AOri: string;
 begin
@@ -40,6 +50,69 @@ begin
   if (AOri = '') then AOri:= '*';
   AResp.SetCustomHeader('Access-Control-Allow-Origin', AOri);
   AResp.SetCustomHeader('Access-Control-Allow-Credentials', 'true');
+end;
+
+function ISCHttpRequest(AUrl: string; AMethod: THttpMethod;
+  AQueryParam: string = '';
+  ADataParam: string = '{}';
+  AHeaders: specialize TFPGMap<string, string> = nil;
+  ACalllback: TISCHttpCallback = nil
+): string;
+var
+  http: TFPHTTPClient;
+  i: Integer;
+  reqUrl: string;
+  retText: string;
+  retError: string = '';
+  retCookie: specialize TFPGMap<string, string> = nil;
+begin
+  Result := '';
+  http := TFPHTTPClient.Create(nil);
+  try
+    if (AHeaders <> nil) then begin
+      for i:= 0 to AHeaders.Count - 1 do begin
+        http.AddHeader(AHeaders.Keys[i], AHeaders.Data[i]);
+      end;
+    end;
+    http.AllowRedirect:= True;
+    if ((AMethod = hmPost) or (AMethod = hmPut)) and (ADataParam <> '') then begin
+      http.AddHeader('Content-Type','application/json; charset=UTF-8');
+      http.RequestBody := TRawByteStringStream.Create(ADataParam);
+    end;
+    reqUrl:= AUrl;
+    if (AQueryParam <> '') then begin
+      reqUrl += '?' + AQueryParam;
+    end;
+
+    try
+      case AMethod of
+      hmGet: retText := http.Get(reqUrl);
+      hmPost: retText:= http.Post(reqUrl);
+      hmPut: retText:= http.Put(reqUrl);
+      hmDelete: retText:= http.Delete(reqUrl);
+      hmOption: retText:= http.Options(reqUrl);
+      end;
+
+    except
+      on E: Exception do begin
+        retError:= E.Message;
+      end;
+    end;
+
+    if (ACalllback <> nil) then begin
+      retCookie := specialize TFPGMap<string, string>.Create;
+      for i:= 0 to http.ResponseHeaders.Count - 1 do begin
+        retCookie.Add(http.ResponseHeaders.Names[i], http.ResponseHeaders.ValueFromIndex[i]);
+      end;
+      ACalllback(reqUrl, http.ResponseStatusCode, retText, retCookie, retError);
+    end;
+
+  finally
+    if ((AMethod = hmPost) or (AMethod = hmPut)) and (ADataParam <> '') then begin
+      http.RequestBody.Free;
+    end;
+    http.Free;
+  end;
 end;
 
 function ISCHttpGet(AUrl: string; AHeaders: specialize TFPGMap<string, string>): string;

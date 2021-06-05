@@ -15,6 +15,8 @@ var
   LD_DIR: string;
   BANNER_PATH: string;
 
+  LOGGER_LEVEL: string = 'info';
+
 implementation
 
 initialization
