@@ -25,7 +25,7 @@
       <FormatVersion Value="2"/>
       <Modes Count="0"/>
     </RunParams>
-    <Units Count="14">
+    <Units Count="23">
       <Unit0>
         <Filename Value="iscbase.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -61,9 +61,8 @@
         <IsPartOfProject Value="True"/>
       </Unit7>
       <Unit8>
-        <Filename Value="iscbase/ISCJson.pas"/>
+        <Filename Value="iscbase/ISCJSON.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ISCJSON"/>
       </Unit8>
       <Unit9>
         <Filename Value="iscbase/ISCYaml.pas"/>
@@ -74,20 +73,55 @@
         <IsPartOfProject Value="True"/>
       </Unit10>
       <Unit11>
-        <Filename Value="iscbase/iscconsts.pas"/>
+        <Filename Value="iscbase/ISCConsts.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ISCConsts"/>
       </Unit11>
       <Unit12>
-        <Filename Value="iscbase/isclogger.pas"/>
+        <Filename Value="iscbase/ISCLogger.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ISCLogger"/>
       </Unit12>
       <Unit13>
         <Filename Value="testjson.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="testJson"/>
       </Unit13>
+      <Unit14>
+        <Filename Value="testyaml.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="iscbase/database/dbc/ZDbcConnection.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="iscbase/database/core/ZClasses.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="testdatabase.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="iscbase/database/component/ZConnection.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit18>
+      <Unit19>
+        <Filename Value="iscbase/network/pingsend.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit19>
+      <Unit20>
+        <Filename Value="testnetwork.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="testNetwork"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="testscript.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit21>
+      <Unit22>
+        <Filename Value="iscbase/script/uPSComponent.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit22>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -97,7 +131,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="iscbase;/Applications/Lazarus/components/lazutils/lib/x86_64-darwin/;/Applications/Lazarus/packager/units/x86_64-darwin/"/>
+      <OtherUnitFiles Value="iscbase;/Applications/Lazarus/components/lazutils/lib/x86_64-darwin/;/Applications/Lazarus/packager/units/x86_64-darwin/;iscbase/database/dbc;iscbase/database/core;iscbase/database/component;iscbase/database/parsesql;iscbase/database/plain;iscbase/network;iscbase/script"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>
