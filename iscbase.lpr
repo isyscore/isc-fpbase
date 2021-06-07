@@ -3,10 +3,10 @@ program iscbase;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, sysutils, testUTF8, testGeneric, fphttp, fphttpclient, fgl,
+  cthreads, Classes, sysutils, testUTF8, testGeneric, fphttp, fphttpclient, fgl,
   testthread, ISCGeneric, ISCThread, ISCUTF8Helper, ISCHttp, ISCStringUtil,
   ISCConsts, ISCLogger, ISCJSON, testJson, testyaml, testdatabase, testNetwork,
-  testscript;
+  testscript, testCoroutine;
 
 begin
   // doTestUTF8();
@@ -15,6 +15,8 @@ begin
   // doTestGeneric2();
   // doTestYaml();
   // doTestDatabase();
-  doTestNetwork();
+  // doTestNetwork();
+  doTestCoroutine();
+  doTestCoroutine2();
 end.
 

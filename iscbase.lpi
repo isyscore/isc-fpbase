@@ -25,7 +25,7 @@
       <FormatVersion Value="2"/>
       <Modes Count="0"/>
     </RunParams>
-    <Units Count="23">
+    <Units Count="26">
       <Unit0>
         <Filename Value="iscbase.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -122,6 +122,19 @@
         <Filename Value="iscbase/script/uPSComponent.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit22>
+      <Unit23>
+        <Filename Value="iscbase/coroutine/ISCCoroutine.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit23>
+      <Unit24>
+        <Filename Value="testcoroutine.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="testCoroutine"/>
+      </Unit24>
+      <Unit25>
+        <Filename Value="iscbase/coroutine/ISCCoroutineFunctional.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit25>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -131,7 +144,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="iscbase;/Applications/Lazarus/components/lazutils/lib/x86_64-darwin/;/Applications/Lazarus/packager/units/x86_64-darwin/;iscbase/database/dbc;iscbase/database/core;iscbase/database/component;iscbase/database/parsesql;iscbase/database/plain;iscbase/network;iscbase/script"/>
+      <OtherUnitFiles Value="iscbase;/Applications/Lazarus/components/lazutils/lib/x86_64-darwin/;/Applications/Lazarus/packager/units/x86_64-darwin/;iscbase/database/dbc;iscbase/database/core;iscbase/database/component;iscbase/database/parsesql;iscbase/database/plain;iscbase/network;iscbase/script;iscbase/coroutine"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>
