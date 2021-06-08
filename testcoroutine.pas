@@ -73,6 +73,7 @@ begin
   c1 := TISCCoroutineImpl.Create;
   c2 := TISCCoroutineImpl.Create;
   c1.Setup(@m1).Start;
+  WriteLn('CID: %s, GID: %s'.Format([c1.Settings.Await.CoroutineID, c1.Settings.Await.GroupID]));
   c2.AddArg('id', c1.Settings.Await.GroupID).Setup(@m2).Start;
   Await();
   et := GetTickCount64;

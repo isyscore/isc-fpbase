@@ -16,7 +16,8 @@ begin
   // doTestYaml();
   // doTestDatabase();
   // doTestNetwork();
-  doTestCoroutine();
-  doTestCoroutine2();
+  // doTestCoroutine();
+  // doTestCoroutine2();
+  doTestThread();
 end.
 
