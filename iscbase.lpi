@@ -25,23 +25,23 @@
       <FormatVersion Value="2"/>
       <Modes Count="0"/>
     </RunParams>
-    <Units Count="26">
+    <Units Count="31">
       <Unit0>
         <Filename Value="iscbase.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="testutf8.pas"/>
+        <Filename Value="test/testutf8.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="testUTF8"/>
       </Unit1>
       <Unit2>
-        <Filename Value="testgeneric.pas"/>
+        <Filename Value="test/testgeneric.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="testGeneric"/>
       </Unit2>
       <Unit3>
-        <Filename Value="testthread.pas"/>
+        <Filename Value="test/testthread.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit3>
       <Unit4>
@@ -81,12 +81,12 @@
         <IsPartOfProject Value="True"/>
       </Unit12>
       <Unit13>
-        <Filename Value="testjson.pas"/>
+        <Filename Value="test/testjson.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="testJson"/>
       </Unit13>
       <Unit14>
-        <Filename Value="testyaml.pas"/>
+        <Filename Value="test/testyaml.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit14>
       <Unit15>
@@ -98,7 +98,7 @@
         <IsPartOfProject Value="True"/>
       </Unit16>
       <Unit17>
-        <Filename Value="testdatabase.pas"/>
+        <Filename Value="test/testdatabase.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit17>
       <Unit18>
@@ -110,12 +110,12 @@
         <IsPartOfProject Value="True"/>
       </Unit19>
       <Unit20>
-        <Filename Value="testnetwork.pas"/>
+        <Filename Value="test/testnetwork.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="testNetwork"/>
       </Unit20>
       <Unit21>
-        <Filename Value="testscript.pas"/>
+        <Filename Value="test/testscript.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit21>
       <Unit22>
@@ -127,7 +127,7 @@
         <IsPartOfProject Value="True"/>
       </Unit23>
       <Unit24>
-        <Filename Value="testcoroutine.pas"/>
+        <Filename Value="test/testcoroutine.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="testCoroutine"/>
       </Unit24>
@@ -135,6 +135,26 @@
         <Filename Value="iscbase/coroutine/ISCCoroutineFunctional.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit25>
+      <Unit26>
+        <Filename Value="iscbase/websocket/ISCWebSocketClient.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit26>
+      <Unit27>
+        <Filename Value="iscbase/websocket/ISCWebSocketServer.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit27>
+      <Unit28>
+        <Filename Value="iscbase/websocket/ISCWSMessages.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit28>
+      <Unit29>
+        <Filename Value="iscbase/websocket/ISCWSStream.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit29>
+      <Unit30>
+        <Filename Value="iscbase/websocket/ISCWSUtils.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit30>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -144,11 +164,12 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="iscbase;/Applications/Lazarus/components/lazutils/lib/x86_64-darwin/;/Applications/Lazarus/packager/units/x86_64-darwin/;iscbase/database/dbc;iscbase/database/core;iscbase/database/component;iscbase/database/parsesql;iscbase/database/plain;iscbase/network;iscbase/script;iscbase/coroutine"/>
+      <OtherUnitFiles Value="iscbase;/Applications/Lazarus/components/lazutils/lib/x86_64-darwin/;/Applications/Lazarus/packager/units/x86_64-darwin/;iscbase/database/dbc;iscbase/database/core;iscbase/database/component;iscbase/database/parsesql;iscbase/database/plain;iscbase/network;iscbase/script;iscbase/coroutine;iscbase/websocket;test"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>
       <Debugging>
+        <DebugInfoType Value="dsDwarf2Set"/>
         <UseHeaptrc Value="True"/>
       </Debugging>
     </Linking>

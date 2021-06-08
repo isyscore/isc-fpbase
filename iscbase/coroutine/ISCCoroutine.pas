@@ -615,7 +615,9 @@ var
 
       //lastly, remove ourselves from the list
       if AList.IndexOf(AID) < 0 then
+      begin
         Exit;
+      end;
 
       FLockedEvent := False;
       AList.Remove(AID);
@@ -624,9 +626,6 @@ var
     end;
   end;
 
-  (*
-    checks for force killing, and handles it
-  *)
   function CheckForceKill : Boolean;
   begin
     LForceKill := FCoroutine.ISCCoroutine.Settings.ForceTerminate;
@@ -694,8 +693,9 @@ begin
       CheckForceKill;
     end;
 
-    //wait until the Coroutine is finished
-    while Assigned(FCoroutine) and not FCoroutine.Finished do
+    // wait until the Coroutine is finished
+    // give up the killed coroutine, here will cause the memory leak, muse include "cmem" for fixing it.
+    while (Assigned(FCoroutine) and not FCoroutine.Finished) and (not FKilled) do
     begin
       //check if we should stop
       FStopRequest := DoGetShouldStop;
@@ -710,6 +710,7 @@ begin
       //sleep smallest granularity
       Sleep(1);
     end;
+
   finally
     //raises stop events, and removes from list
     RemoveID(FID,FList);

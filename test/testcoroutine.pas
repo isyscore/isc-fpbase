@@ -6,10 +6,11 @@ unit testCoroutine;
 interface
 
 uses
-  Classes, SysUtils, ISCCoroutine;
+  Classes, SysUtils, ISCCoroutine, DateUtils;
 
 procedure doTestCoroutine();
 procedure doTestCoroutine2();
+procedure doTestCoroutine3();
 
 implementation
 
@@ -79,6 +80,33 @@ begin
   et := GetTickCount64;
   // time near 3000ms
   WriteLn('result: %d, time: %d'.Format([r1 + r2, et - st]));
+end;
+
+procedure doTestCoroutine3();
+var
+  c: IISCCoroutine;
+
+  procedure m0(const ACorouting: IISCCoroutine);
+  begin
+    Sleep(ACorouting['sleep']);
+  end;
+
+  procedure ce0(const ACorouting: IISCCoroutine);
+  begin
+    WriteLn('Force kill elapsed: %d'.Format([MilliSecondsBetween(ACorouting['start'], Now)]));
+  end;
+
+begin
+  c := TISCCoroutineImpl.Create;
+  c.AddArg('sleep', 2000).AddArg('start', Now)
+    .Settings.UpdateMaxRuntime(550).UpdateForceTerminate(True)
+    .Coroutine
+    .Events.UpdateOnStopNestedCallback(@ce0)
+    .Coroutine
+    .Setup(@m0).Start;
+
+  Await();
+  WriteLn('Force kill completed.');
 end;
 
 end.
