@@ -557,7 +557,7 @@ begin
     sl.Add('  RegisterFileLocation(''static'', FILES_DIR);');
     sl.Add('  HTTPRouter.RegisterRoute(''/'', rmAll, @index);');
     sl.Add('  Application.QueueSize:= 1000;');
-    sl.Add('  Application.Port := 8080;');
+    sl.Add('  Application.Port := SERVER_PORT;');
     sl.Add('  Application.Threaded := True;');
     sl.Add('  Application.Initialize;');
     sl.Add('  Application.Run;');

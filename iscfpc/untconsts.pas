@@ -9,7 +9,7 @@ uses
 
 const
   BASE_URL = 'http://yugioh.vip:9000/static';
-  VERSION = '1.0.0';
+  VERSION = '1.0.1';
 
   SPL = {$IFDEF WINDOWS}'\'{$ELSE}'/'{$ENDIF};
   VSSPL = {$IFDEF WINDOWS}'\\'{$ELSE}'/'{$ENDIF};
@@ -19,7 +19,7 @@ const
   FPC_CMD = {$IFDEF WINDOWS}'C:\\lazarus\\fpc\\3.2.0\\bin\\x86_64-win64\\fpc.exe'{$ELSE}{$IFDEF DARWIN}'/usr/local/bin/fpc'{$ELSE}'/usr/bin/fpc'{$ENDIF}{$ENDIF};
   INSTANTFPC_CMD = {$IFDEF WINDOWS}'C:\\lazarus\\fpc\\3.2.0\\bin\\x86_64-win64\\instantfpc.exe'{$ELSE}'instantfpc'{$ENDIF};
   // plugin config
-  FREEPASCAL_SOURCE_PATH = {$IFDEF WINDOWS}'C:\lazarus\fpc\3.2.0\source\'{$ELSE}{$IFDEF DARWIN}'/usr/local/share/fpcsrc/3.2.0/'{$ELSE}'/usr/share/fpcsrc/3.2.0/'{$ENDIF}{$ENDIF};
+  FREEPASCAL_SOURCE_PATH = {$IFDEF WINDOWS}'C:\lazarus\fpc\3.2.0\source\'{$ELSE}{$IFDEF DARWIN}'/usr/local/share/fpcsrc/3.2.0/'{$ELSE}'/usr/lib/fpc/src/'{$ENDIF}{$ENDIF};
   DELPHI_INSTALLATION_PATH = {$IFDEF WINDOWS}'C:\lazarus\fpc\3.2.0\bin\x86_64-win64\fpc.exe'{$ELSE}{$IFDEF DARWIN}'/usr/local/bin/fpc'{$ELSE}'/usr/bin/fpc'{$ENDIF}{$ENDIF};
 
   LAZ_UTILS_PATH = {$IFDEF WINDOWS}'C:\lazarus\components\lazutils'{$ELSE}{$IFDEF DARWIN}'/Applications/Lazarus/components/lazutils'{$ELSE}'/usr/lib/lazarus/components/lazutils'{$ENDIF}{$ENDIF};

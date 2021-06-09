@@ -46,16 +46,18 @@ var
 begin
   y := TYamlFile.Create();
   y.LoadFromFile(APath);
-  ACTIVE_PROFILE := y.GetValue('spring.profile.active', '');
+  ACTIVE_PROFILE := y.GetValue('spring.profiles.active', '');
   if (ACTIVE_PROFILE = '') then begin
-    ACTIVE_PROFILE:= y.GetValue('fpweb.profile.active', '');
+    ACTIVE_PROFILE:= y.GetValue('fpweb.profiles.active', '');
   end;
   readYaml(y);
   if(ACTIVE_PROFILE <> '') then begin
     // override sub profile
     APPLICATION_YML_PATH:= APPLICATION_YML_PATH.Replace('application.yml', 'application-' +  ACTIVE_PROFILE + '.yml');
-    y.LoadFromFile(APPLICATION_YML_PATH);
-    readYaml(y);
+    if (FileExists(APPLICATION_YML_PATH)) then begin
+      y.LoadFromFile(APPLICATION_YML_PATH);
+      readYaml(y);
+    end;
   end;
   y.Free;
 end;
