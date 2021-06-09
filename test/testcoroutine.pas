@@ -98,8 +98,8 @@ var
 
 begin
   c := TISCCoroutineImpl.Create;
-  c.AddArg('sleep', 2000).AddArg('start', Now)
-    .Settings.UpdateMaxRuntime(550).UpdateForceTerminate(True)
+  c.AddArg('sleep', 500000).AddArg('start', Now)
+    .Settings.UpdateMaxRuntime(1000).UpdateForceTerminate(True)
     .Coroutine
     .Events.UpdateOnStopNestedCallback(@ce0)
     .Coroutine

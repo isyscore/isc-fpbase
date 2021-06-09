@@ -164,7 +164,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="iscbase;/Applications/Lazarus/components/lazutils/lib/x86_64-darwin/;/Applications/Lazarus/packager/units/x86_64-darwin/;iscbase/database/dbc;iscbase/database/core;iscbase/database/component;iscbase/database/parsesql;iscbase/database/plain;iscbase/network;iscbase/script;iscbase/coroutine;iscbase/websocket;test"/>
+      <OtherUnitFiles Value="iscbase;/Applications/Lazarus/components/lazutils/lib/x86_64-darwin/;/Applications/Lazarus/packager/units/x86_64-darwin/;/usr/lib/lazarus/components/lazutils/lib/x86_64-linux/;/usr/lib/lazarus/packager/units/x86_64-linux/;iscbase/database/dbc;iscbase/database/core;iscbase/database/component;iscbase/database/parsesql;iscbase/database/plain;iscbase/network;iscbase/script;iscbase/coroutine;iscbase/websocket;test"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>

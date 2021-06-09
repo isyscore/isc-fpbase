@@ -18,7 +18,7 @@ begin
   // doTestNetwork();
   // doTestCoroutine();
   // doTestCoroutine2();
-  //doTestCoroutine3();
+  doTestCoroutine3();
   //doTestCoroutine();
   //doTestCoroutine2();
   // doTestThread();
