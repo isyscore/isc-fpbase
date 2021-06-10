@@ -9,7 +9,7 @@ uses
 
 const
   BASE_URL = 'http://yugioh.vip:9000/static';
-  VERSION = '1.0.1';
+  VERSION = '1.0.3';
 
   SPL = {$IFDEF WINDOWS}'\'{$ELSE}'/'{$ENDIF};
   VSSPL = {$IFDEF WINDOWS}'\\'{$ELSE}'/'{$ENDIF};

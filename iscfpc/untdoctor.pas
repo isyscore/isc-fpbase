@@ -8,6 +8,7 @@ uses
   Classes, SysUtils, untConsts, untFPCEnv, untVSCode, fphttpclient;
 
 procedure doDoctor();
+procedure doDoctorFix();
 
 implementation
 
@@ -88,6 +89,12 @@ begin
   WriteLn('%s VSCode: Bookmarks'.format([codeStatusToStr(stBookmarks)]));
   WriteLn('%s VSCode: BracketPairColorizer'.format([codeStatusToStr(stBracketPairColorizer)]));
   WriteLn('');
+  WriteLn(#27'[33mTo fix VSCode config problem, use "iscfpc doctor fix".'#27'[0m');
+end;
+
+procedure doDoctorFix();
+begin
+  fixVSCodePluginConfig();
 end;
 
 end.

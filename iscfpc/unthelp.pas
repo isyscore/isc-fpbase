@@ -38,6 +38,7 @@ begin
   WriteLn('  create            Create a new iSyscore FPC project.');
   WriteLn('  doctor            Show information about the installed tooling.');
   WriteLn('  upgrade           Upgrade the "iscbase" dependencies for your app.');
+  WriteLn('  ocean             Show or download fpc sample code in Code Ocean.');
   WriteLn('');
 end;
 

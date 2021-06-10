@@ -27,7 +27,7 @@ begin
         doClean(ABasePath + src.Name);
       end else if (FileExists(ABasePath + src.Name)) then begin
         ext := string(ExtractFileExt(src.Name)).ToLower;
-        if (ext = '.o') or (ext = '.ppu') or (ext = '.dcu') or (ext = '.compiled') or (ext = '.or') or (ext = '.rsj') or (ext = '.lps') then begin
+        if (ext = '.o') or (ext = '.ppu') or (ext = '.dcu') or (ext = '.compiled') or (ext = '.or') or (ext = '.rsj') or (ext = '.lps') or (ext = '.s') then begin
           DeleteFile(ABasePath + src.Name);
           Inc(cleanCount);
         end;

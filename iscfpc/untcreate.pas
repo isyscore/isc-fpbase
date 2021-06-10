@@ -522,7 +522,7 @@ var
   sl: TStringList;
 begin
   sl:= TStringList.Create;
-  if (AProjType = 'lib') then begin
+  if (AProjType = 'lib') or (AProjType = 'jni') then begin
     sl.Add('library %s;'.format([AProjName]));
   end else begin
     sl.Add('program %s;'.format([AProjName]));
@@ -538,6 +538,8 @@ begin
     sl.Add('  cmem, Classes, SysUtils, untFunc;');
   end else if (AProjType = 'web') then begin
     sl.Add('  cmem, fpwebfile, fphttpapp, HTTPDefs, httproute, fphttp, ISCConsts, untRoute;');
+  end else if (AProjType = 'jni') then begin
+    sl.Add('  cmem, Classes, SysUtils, dynlibs, ISCJNI, untFunc;');
   end;
   sl.Add('');
 
@@ -561,6 +563,18 @@ begin
     sl.Add('  Application.Threaded := True;');
     sl.Add('  Application.Initialize;');
     sl.Add('  Application.Run;');
+    sl.Add('end.');
+  end else if (AProjType = 'jni') then begin
+    sl.Add('function Java_com_isyscore_os_native_NativeLib_sayHello(env: PJNIEnv; obj: jobject): jstring; cdecl;');
+    sl.Add('begin');
+    sl.Add('  Result := TJNIEnv.stringToJString(env, sayHello());');
+    sl.Add('end;');
+    sl.Add('');
+    sl.Add('exports');
+    sl.Add('  Java_com_isyscore_os_native_NativeLib_sayHello;');
+    sl.Add('');
+    sl.Add('begin');
+    sl.Add('');
     sl.Add('end.');
   end;
 
@@ -628,7 +642,7 @@ begin
   sl.Add('uses');
   sl.Add('  Classes, SysUtils;');
   sl.Add('');
-  if (AProjType = 'console') then begin
+  if (AProjType = 'console') or (AProjType = 'jni') then begin
     sl.Add('function sayHello(): string;');
   end else if (AProjType = 'lib') then begin
     sl.Add('function sayHello(): PChar; cdecl;');
@@ -636,7 +650,7 @@ begin
   sl.Add('');
   sl.Add('implementation');
   sl.Add('');
-  if (AProjType = 'console') then begin
+  if (AProjType = 'console') or (AProjType = 'jni') then begin
     sl.Add('function sayHello(): string;');
     sl.Add('begin');
     sl.Add('  Exit(''Hello'');');
@@ -653,6 +667,96 @@ begin
   sl.Add('');
   sl.Add('end.');
   sl.SaveToFile(AOutPath + 'src' + SPL + 'untFunc.pas');
+  sl.Free;
+end;
+
+procedure createReadMe(AOutPath: string; AProjName: string; AProjType: string);
+var
+  sl: TStringList;
+begin
+  sl := TStringList.Create;
+  sl.Add('# ' + AProjName);
+  sl.Add('');
+  sl.Add('### How to Compile');
+  sl.Add('');
+  sl.Add('```shell');
+  sl.Add('$ iscfpc build');
+  sl.Add('```');
+  sl.Add('');
+  sl.Add('### Specs');
+  sl.Add('');
+  if (AProjType = 'web') then begin
+    sl.Add('Configure the web app with "application.yml" just like "Springboot".');
+    sl.Add('');
+    sl.Add('Executable''s dependencies(for Alpine) is added to the Dockerfile.');
+    sl.Add('');
+    sl.Add('If the web app uses "MySQL" or other databases, add the dependence library to Dockerfile');
+    sl.Add('');
+    sl.Add('|Database|Package|');
+    sl.Add('|:--|:--|');
+    sl.Add('|MySQL|apk add mariadb-connector-c-dev|');
+    sl.Add('|Oracle|Download from ORACLE and copy to Docker Image|');
+    sl.Add('|SQLServer|apk add freeradius-mssql|');
+    sl.Add('|PostgreSQL|apk add postgresql-libs|');
+    sl.Add('|SQLite|apk add sqlite-libs|');
+  end else if (AProjType = 'console') then begin
+    sl.Add('Execute the compiled app directly is all.');
+  end else if (AProjType = 'lib') then begin
+    sl.Add('You must have a "HOST" app for calling the library.');
+    sl.Add('');
+    sl.Add('A sample host is like that:');
+    sl.Add('');
+    sl.Add('```pascal');
+    sl.Add('program host;');
+    sl.Add('');
+    sl.Add('{$mode objfpc}{$H+}');
+    sl.Add('');
+    sl.Add('uses');
+    sl.Add('  Classes, SysUtils, dynlibs;');
+    sl.Add('');
+    sl.Add('const');
+    sl.Add('  LIB = ''%s'';'.Format([AProjName]));
+    sl.Add('');
+    sl.Add('function sayHello(): PChar; cdecl; external LIB;');
+    sl.Add('');
+    sl.Add('begin');
+    sl.Add('  WriteLn(sayHello());');
+    sl.Add('end.');
+    sl.Add('```');
+    sl.Add('');
+    sl.Add('Compile the host app and run it with:');
+    sl.Add('');
+    sl.Add('```shell');
+    sl.Add('$ LD_LIBRARY_PATH=. ./host');
+    sl.Add('```');
+  end else if (AProjType = 'jni') then begin
+    sl.Add('You must hava a "JVM-HOSTED" app for calling the library.');
+    sl.Add('');
+    sl.Add('A sample host is like that:');
+    sl.Add('');
+    sl.Add('```java');
+    sl.Add('package com.isyscore.os.native;');
+    sl.Add('');
+    sl.Add('public class NativeLib {');
+    sl.Add('  public native String sayHello();');
+    sl.Add('');
+    sl.Add('  static {');
+    sl.Add('    System.loadLibrary("%s");'.Format([AProjName]));
+    sl.Add('  }');
+    sl.Add('}');
+    sl.Add('```');
+  end;
+  sl.Add('');
+  sl.Add('### Extend Reading');
+  sl.Add('');
+  sl.Add('You may visit ```Code Ocean``` for more and more code examples.');
+  sl.Add('');
+  sl.Add('just type the command:');
+  sl.Add('');
+  sl.Add('```shell');
+  sl.Add('$ iscfpc ocean');
+  sl.Add('```');
+  sl.SaveToFile(AOutPath + 'README.md');
   sl.Free;
 end;
 
@@ -695,16 +799,25 @@ begin
     createYml(AOutPath, AProjName);
     createDockerFile(AOutPath, AProjName);
     createServiceFile(AOutPath, AProjName);
+    createReadMe(AOutPath, AProjName, AType);
   end else if (AType = 'console') then begin
     createProjectFile(AOutPath, AProjName, AType);
     createFunctionFile(AOutPath, AType);
     createLpi(AOutPath, AProjName, AType);
     createVSCodeFiles(AOutPath);
+    createReadMe(AOutPath, AProjName, AType);
   end else if (AType = 'lib') then begin
     createProjectFile(AOutPath, AProjName, AType);
     createFunctionFile(AOutPath, AType);
     createLpi(AOutPath, AProjName, AType);
     createVSCodeFiles(AOutPath);
+    createReadMe(AOutPath, AProjName, AType);
+  end else if (AType = 'jni') then begin
+    createProjectFile(AOutPath, AProjName, AType);
+    createFunctionFile(AOutPath, AType);
+    createLpi(AOutPath, AProjName, AType);
+    createVSCodeFiles(AOutPath);
+    createReadMe(AOutPath, AProjName, AType);
   end;
 
   WriteLn(#27'[32mCreate project %s completed.'#27'[0m'.Format([AProjName]));
