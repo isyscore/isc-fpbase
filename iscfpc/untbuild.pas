@@ -7,11 +7,55 @@ interface
 uses
   Classes, SysUtils, process, untConsts;
 
-procedure doBuild();
+procedure doBuild(isAlpine: Boolean);
 
 implementation
 
-procedure doBuild();
+procedure changeAlpineLinkRes(lpiPath: string);
+var
+  sl: TStringList;
+  isLib: Boolean;
+  linkResPath: string;
+  i: Integer;
+begin
+  sl := TStringList.Create;
+  sl.LoadFromFile(lpiPath);
+  isLib:= sl.Text.Contains('<ExecutableType Value="Library"/>');
+  sl.Free;
+
+  if (isLib) then begin
+    // remove ld-linux-x86-64.so.2
+    linkResPath:= ExtractFilePath(lpiPath) + 'link.res';
+    sl := TStringList.Create;
+    sl.LoadFromFile(linkResPath);
+    for i := 0 to sl.Count - 1 do begin
+      if (sl[i].Trim = '/lib64/ld-linux-x86-64.so.2') then begin
+        sl.Delete(i + 1);
+        sl.Delete(i);
+        sl.Delete(i - 1);
+        Break;
+      end;
+    end;
+    sl.SaveToFile(linkResPath);
+    sl.Free;
+  end;
+end;
+
+procedure changeAlpinePpasSh(lpiPath: string);
+var
+  sl: TStringList;
+  ppasPath: string;
+begin
+  ppasPath:= ExtractFilePath(lpiPath) + 'ppas.sh';
+  sl := TStringList.Create;
+  sl.LoadFromFile(ppasPath);
+  // remove fpc init/fini
+  sl.Text:= sl.Text.Replace('-init FPC_SHARED_LIB_START', '', [rfIgnoreCase, rfReplaceAll]).Replace('-fini FPC_LIB_EXIT', '', [rfReplaceAll, rfIgnoreCase]);
+  sl.SaveToFile(ppasPath);
+  sl.Free;
+end;
+
+procedure doBuild(isAlpine: Boolean);
 var
   src: TSearchRec;
   list: TStringList;
@@ -19,6 +63,7 @@ var
   lpi: string;
   outstr: string;
   retStat: Boolean;
+  pname: string;
 begin
   list := TStringList.Create;
   cd := GetCurrentDir();
@@ -33,13 +78,31 @@ begin
 
   if (list.Count <> 0) then begin
     for lpi in list do begin
-      WriteLn(#27'[33mBuilding project: %s'#27'[0m'.Format([ExtractFileName(lpi)]));
+      pname:= ExtractFileName(lpi);
+      WriteLn(#27'[33mBuilding project: %s'#27'[0m'.Format([pname]));
+      // compile
       retStat := RunCommandInDir(cd, LAZ_BUILD_PATH, [lpi], outstr, [poWaitOnExit, poUsePipes]);
       WriteLn(outstr);
       if (retStat) then begin
-        WriteLn(#27'[32mBuild project %s completed.'#27'[0m'.Format([ExtractFileName(lpi)]));
+        WriteLn(#27'[32mBuild project %s completed.'#27'[0m'.Format([pname]));
+        // link
+        if (isAlpine) then begin
+          // change link.res and ppas.sh
+          changeAlpineLinkRes(lpi);
+          changeAlpinePpasSh(lpi);
+        end;
+        // run ppas.sh
+        retStat := RunCommandInDir(cd, 'sh', ['ppas.sh'], outstr, [poWaitOnExit, poUsePipes]);
+        if (retStat) then begin
+          WriteLn(#27'[32mLink project %s completed.'#27'[0m'.Format([pname]));
+        end else begin
+          WriteLn(#27'[31mLink project %s failed.'#27'[0m'.Format([pname]));
+        end;
+        // clean
+        DeleteFile(ExtractFilePath(lpi) + 'link.res');
+        DeleteFile(ExtractFilePath(lpi) + 'ppas.sh');
       end else begin
-        WriteLn(#27'[31mBuild project %s failed.'#27'[0m'.Format([ExtractFileName(lpi)]));
+        WriteLn(#27'[31mBuild project %s failed.'#27'[0m'.Format([pname]));
       end;
     end;
   end else begin

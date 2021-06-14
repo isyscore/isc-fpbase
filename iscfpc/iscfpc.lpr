@@ -14,6 +14,7 @@ var
   isCreated: Boolean = False;
   oProj: string;
   isFix: string;
+  isAlpine: Boolean;
 begin
   if (ParamCount = 0) then begin
     printHelp();
@@ -22,7 +23,11 @@ begin
 
   param := ParamStr(1);
   case param of
-  'build': doBuild();
+  'build':
+    begin
+      isAlpine:= {$IFDEF LINUX} ParamStr(2) = 'ALPINE' {$ELSE} False {$ENDIF};
+      doBuild(isAlpine);
+    end;
   'clean': doClean();
   'create':
     begin

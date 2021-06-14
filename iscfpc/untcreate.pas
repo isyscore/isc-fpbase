@@ -189,7 +189,18 @@ begin
   sl.Add('      <OtherUnitFiles Value="%s;src;test;iscbase;iscbase/database;iscbase/database/component;iscbase/database/core;iscbase/database/dbc;iscbase/database/parsesql;iscbase/database/plain;iscbase/network;iscbase/script;iscbase/coroutine;iscbase/websocket"/>'.format([getLazarusUnitPaths()]));
   sl.Add('      <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>');
   sl.Add('    </SearchPaths>');
+  if (AProjType = 'lib') or (AProjType = 'jni') then begin
+    sl.Add('    <CodeGeneration>');
+    sl.Add('      <RelocatableUnit Value="True"/>');
+    sl.Add('    </CodeGeneration>');
+    sl.Add('    <Linking>');
+    sl.Add('      <Options>');
+    sl.Add('        <ExecutableType Value="Library"/>');
+    sl.Add('      </Options>');
+    sl.Add('    </Linking>');
+  end;
   sl.Add('    <Other>');
+  sl.Add('      <CustomOptions Value="-Cn"/>');
   sl.Add('      <CompilerMessages>');
   sl.Add('        <IgnoredMessages idx6058="True" idx3124="True" idx3123="True"/>');
   sl.Add('      </CompilerMessages>');
