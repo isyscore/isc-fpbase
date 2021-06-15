@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, untConsts, FileUtil, fphttpclient, Zipper;
 
-procedure doCreate(AOutPath: string; AType: string; ACreated: Boolean);
+procedure doCreate(AOutPath: string; AType: string; ACreated: Boolean; AJava: Boolean);
 
 implementation
 
@@ -100,24 +100,37 @@ begin
   Exit(not hasError);
 end;
 
-procedure createDockerFile(AOutPath: string; AProjName: string);
+procedure createDockerFile(AOutPath: string; AProjName: string; AJava: Boolean);
 var
   sl: TStringList;
 begin
   sl := TStringList.Create;
-  sl.Add('FROM 10.30.30.22:9080/library/alpine:3.12');
+  if (AJava) then begin
+    sl.Add('FROM 10.30.30.22:9080/library/openjdk:8-jdk-alpine');
+  end else begin
+    sl.Add('FROM 10.30.30.22:9080/library/alpine:3.12');
+  end;
   sl.Add('');
   sl.Add('RUN sed -i ''s/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g'' /etc/apk/repositories \');
   sl.Add('    && apk add tzdata \');
   sl.Add('    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \');
   sl.Add('    && echo "Asia/Shanghai" > /etc/timezone \');
   sl.Add('    && apk del tzdata \');
-  sl.Add('    && apk add dumb-init libgcc libc6-compat dbus curl yaml \');
+  if (AJava) then begin
+    sl.Add('    && apk add dumb-init libc6-compat libtool openjdk8-jre mariadb-connector-c-dev dbus curl yaml \');
+  end else begin
+    sl.Add('    && apk add dumb-init libc6-compat libtool mariadb-connector-c-dev dbus curl yaml \');
+  end;
   sl.Add('    && apk add --update --no-cache ttf-dejavu fontconfig \');
   sl.Add('    && rm -rf /var/cache/apk/*');
   sl.Add('');
   sl.Add('ARG app=isc-%s-service'.Format([AProjName]));
   sl.Add('ARG path=/home/${app}');
+  if (AJava) then begin
+    sl.Add('ENV LD_LIBRARY_PATH=${path}:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/server');
+  end else begin
+    sl.Add('ENV LD_LIBRARY_PATH=${path}:${path}/ld');
+  end;
   sl.Add('RUN mkdir -p ${path}');
   sl.Add('COPY files ${path}/files');
   sl.Add('COPY ld ${path}/ld');
@@ -771,7 +784,8 @@ begin
   sl.Free;
 end;
 
-procedure doCreate(AOutPath: string; AType: string; ACreated: Boolean);
+procedure doCreate(AOutPath: string; AType: string; ACreated: Boolean;
+  AJava: Boolean);
 var
   AProjName: string;
 begin
@@ -808,7 +822,7 @@ begin
     createLpi(AOutPath, AProjName, AType);
     createVSCodeFiles(AOutPath);
     createYml(AOutPath, AProjName);
-    createDockerFile(AOutPath, AProjName);
+    createDockerFile(AOutPath, AProjName, AJava);
     createServiceFile(AOutPath, AProjName);
     createReadMe(AOutPath, AProjName, AType);
   end else if (AType = 'console') then begin

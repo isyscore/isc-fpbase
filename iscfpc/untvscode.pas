@@ -43,26 +43,6 @@ begin
   Exit(home + SETTINGS_PATH + 'Code' + SPL + 'User' + SPL + 'settings.json');
 end;
 
-{$IFNDEF DARWIN}
-function getLazarusPath(): string;
-var
-  path: string = '/usr/share/lazarus/';
-  src: TSearchRec;
-begin
-  Result := '';
-  if (FindFirst(path + '*', faDirectory, src) = 0) then begin
-    repeat
-      if (src.Name = '..') or (src.Name = '.') then Continue;
-      if (DirectoryExists(path + src.Name)) then begin
-        Result := path + src.name;
-        Break;
-      end;
-    until FindNext(src) <> 0;
-    FindClose(src);
-  end;
-end;
-{$ENDIF}
-
 function getOmniPascalConfig(): TVSCodePluginStatus;
 const
   defaultDevelopmentEnvironment = 'FreePascal';
@@ -74,9 +54,6 @@ var
   delphiIns: UnicodeString;
   sp: UnicodeString;
   searchPath: string = LAZ_UTILS_PATH;
-  {$IF NOT DEFINED(DARWIN) AND NOT DEFINED(WINDOWS)}
-  lazPath: string;
-  {$ENDIF}
 begin
   path := getSettingsPath();
   json := TJSONConfig.Create(nil);
@@ -85,12 +62,6 @@ begin
   fpcSrc:= json.GetValue('omnipascal.freePascalSourcePath', '');
   delphiIns:= json.GetValue('omnipascal.delphiInstallationPath', '');
   sp := json.GetValue('omnipascal.searchPath', '');
-
-  {$IF NOT DEFINED(DARWIN) AND NOT DEFINED(WINDOWS)}
-  lazPath := getLazarusPath();
-  if (lazPath <> '') then lazPath += '/components/lazutils';
-  searchPath:= lazPath;
-  {$ENDIF}
 
   if (devEnv = defaultDevelopmentEnvironment) and (fpcSrc = FREEPASCAL_SOURCE_PATH) and (delphiIns = DELPHI_INSTALLATION_PATH) and (string(sp).Contains(searchPath)) then begin
     Result := psOK;
@@ -247,9 +218,6 @@ var
   json: TJSONConfig;
   sp: string;
   searchPath: string = LAZ_UTILS_PATH;
-  {$IFNDEF DARWIN}
-  lazPath: string;
-  {$ENDIF}
 begin
   path := getSettingsPath();
   json := TJSONConfig.Create(nil);
@@ -266,11 +234,6 @@ begin
     sp += ';';
   end;
   if (not sp.Contains('components' + SPL + 'lazutils')) then begin
-    {$IF NOT DEFINED(DARWIN) AND NOT DEFINED(DARWIN)}
-    lazPath := getLazarusPath();
-    if (lazPath <> '') then lazPath += '/components/lazutils';
-    searchPath:= lazPath;
-    {$ENDIF}
     sp += searchPath;
     json.SetValue('omnipascal.searchPath', sp);
   end;

@@ -15,6 +15,7 @@ var
   oProj: string;
   isFix: string;
   isAlpine: Boolean;
+  isJava: Boolean;
 begin
   if (ParamCount = 0) then begin
     printHelp();
@@ -56,7 +57,8 @@ begin
         WriteLn('');
         Exit;
       end;
-      doCreate(outpath, projType, isCreated);
+      isJava:= ParamStr(4) = 'JAVA';
+      doCreate(outpath, projType, isCreated, isJava);
     end;
   'doctor':
     begin

@@ -7,7 +7,6 @@ interface
 uses
   Classes, SysUtils, untConsts;
 
-
 procedure printHelp();
 
 implementation
@@ -33,12 +32,17 @@ begin
   WriteLn('    --version       Reports the version of this tool.');
   WriteLn('');
   WriteLn('Available commands:');
-  WriteLn('  build             Build an executable app or a library.');
+  WriteLn('  build             Build executable apps and libraries.');
   WriteLn('  clean             Delete the lib/ and $arch/ directories.');
   WriteLn('  create            Create a new iSyscore FPC project.');
   WriteLn('  doctor            Show information about the installed tooling.');
   WriteLn('  upgrade           Upgrade the "iscbase" dependencies for your app.');
   WriteLn('  ocean             Show or download fpc sample code in Code Ocean.');
+  WriteLn('');
+  WriteLn('Special commands:');
+  WriteLn('  build ALPINE      Build executable apps and libraries work for Alpine, (Linux host only)');
+  WriteLn('  create ... JAVA   Create a new iSysCore FPC project with Java Runtime.');
+  WriteLn('  doctor fix        Fix VSCode config problem,');
   WriteLn('');
 end;
 

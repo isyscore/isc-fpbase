@@ -9,7 +9,7 @@ uses
 
 const
   BASE_URL = 'http://yugioh.vip:9000/static';
-  VERSION = '1.0.4';
+  VERSION = '1.0.5';
 
   SPL = {$IFDEF WINDOWS}'\'{$ELSE}'/'{$ENDIF};
   VSSPL = {$IFDEF WINDOWS}'\\'{$ELSE}'/'{$ENDIF};
@@ -37,7 +37,6 @@ const
   FCL_PPU_WIN = 'C:\lazarus\packager\units\x86_64-win64';
   FCL_PPU_WIN_VS = 'C:\\lazarus\\packager\\units\\x86_64-win64';
   FCL_PPU_LIN = '/usr/lib/lazarus/packager/units/x86_64-linux';
-
 
 function packVar(str: string): string;
 
