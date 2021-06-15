@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, process, untConsts;
 
-procedure doBuild(isAlpine: Boolean);
+procedure doBuild(AProj: string; isAlpine: Boolean);
 
 implementation
 
@@ -55,7 +55,7 @@ begin
   sl.Free;
 end;
 
-procedure doBuild(isAlpine: Boolean);
+procedure doBuild(AProj: string; isAlpine: Boolean);
 var
   src: TSearchRec;
   list: TStringList;
@@ -65,9 +65,46 @@ var
   retStat: Boolean;
   pname: string;
 begin
-  list := TStringList.Create;
   cd := GetCurrentDir();
   if (not cd.EndsWith(SPL)) then cd += SPL;
+
+  if (AProj <> '') then begin
+    lpi := cd + AProj;
+    if (not lpi.EndsWith('.lpi')) then lpi += '.lpi';
+    if (not FileExists(lpi)) then begin
+      WriteLn(#27'[32mProject %s not found.'#27'[0m'.Format([AProj]));
+      Exit;
+    end;
+    pname:= ExtractFileName(lpi);
+    WriteLn(#27'[33mBuilding project: %s'#27'[0m'.Format([pname]));
+    // compile
+    retStat := RunCommandInDir(cd, LAZ_BUILD_PATH, [lpi], outstr, [poWaitOnExit, poUsePipes]);
+    WriteLn(outstr);
+    if (retStat) then begin
+      WriteLn(#27'[32mBuild project %s completed.'#27'[0m'.Format([pname]));
+        // link
+        if (isAlpine) then begin
+          // change link.res and ppas.sh
+          changeAlpineLinkRes(lpi);
+          changeAlpinePpasSh(lpi);
+        end;
+        // run ppas.sh
+        retStat := RunCommandInDir(cd, 'sh', ['ppas.sh'], outstr, [poWaitOnExit, poUsePipes]);
+        if (retStat) then begin
+          WriteLn(#27'[32mLink project %s completed.'#27'[0m'.Format([pname]));
+        end else begin
+          WriteLn(#27'[31mLink project %s failed.'#27'[0m'.Format([pname]));
+        end;
+        // clean
+        DeleteFile(ExtractFilePath(lpi) + 'link.res');
+        DeleteFile(ExtractFilePath(lpi) + 'ppas.sh');
+    end else begin
+       WriteLn(#27'[31mBuild project %s failed.'#27'[0m'.Format([pname]));
+    end;
+    Exit;
+  end;
+
+  list := TStringList.Create;
   if (FindFirst(cd + '*.lpi', faAnyFile, src) = 0) then begin
     repeat
       if (src.Name = '.') or (src.Name = '..') then Continue;

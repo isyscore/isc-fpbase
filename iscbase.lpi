@@ -25,7 +25,7 @@
       <FormatVersion Value="2"/>
       <Modes Count="0"/>
     </RunParams>
-    <Units Count="32">
+    <Units Count="34">
       <Unit0>
         <Filename Value="iscbase.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -159,6 +159,16 @@
         <Filename Value="iscbase/ISCJNI.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit31>
+      <Unit32>
+        <Filename Value="iscbase/iscdl.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ISCDL"/>
+      </Unit32>
+      <Unit33>
+        <Filename Value="iscbase/iscjvm.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ISCJVM"/>
+      </Unit33>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

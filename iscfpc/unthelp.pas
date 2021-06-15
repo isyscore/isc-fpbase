@@ -22,7 +22,7 @@ begin
   WriteLn('  iscfpc create <project type> <output directory>');
   WriteLn('    Create a new iSyscore FPC project in the specified directory.');
   WriteLn('');
-  WriteLn('  iscfpc build');
+  WriteLn('  iscfpc build <project name>');
   WriteLn('    Build all FPC application in specified directory.');
   WriteLn('');
   WriteLn('Usage: iscfpc <command> [arguments]');

@@ -14,6 +14,7 @@ var
   isCreated: Boolean = False;
   oProj: string;
   isFix: string;
+  buildProj: string;
   isAlpine: Boolean;
   isJava: Boolean;
 begin
@@ -26,8 +27,18 @@ begin
   case param of
   'build':
     begin
-      isAlpine:= {$IFDEF LINUX} ParamStr(2) = 'ALPINE' {$ELSE} False {$ENDIF};
-      doBuild(isAlpine);
+      buildProj := ParamStr(2);
+      {$IFDEF LINUX}
+      if (buildProj = 'ALPINE') then begin
+        buildProj:= '';
+        isAlpine:= True;
+      end else begin
+        isAlpine:= ParamStr(3) = 'ALPINE';
+      end;
+      {$ELSE}
+      isAlpine := False;
+      {$ENDIF}
+      doBuild(buildProj, isAlpine);
     end;
   'clean': doClean();
   'create':
