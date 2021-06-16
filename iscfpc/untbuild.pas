@@ -11,6 +11,22 @@ procedure doBuild(AProj: string; isAlpine: Boolean);
 
 implementation
 
+function findLinkRes(path: string): string;
+var
+  src: TSearchRec;
+  ret: string = '';
+begin
+  if (FindFirst(path + 'link*.res', faAnyFile, src) = 0) then begin
+    repeat
+      if (src.Name = '.') or (src.Name = '..') then Continue;
+      ret := path + src.Name;
+      Break;
+    until FindNext(src) <> 0;
+    FindClose(src);
+  end;
+  Exit(ret);
+end;
+
 procedure changeAlpineLinkRes(lpiPath: string);
 var
   sl: TStringList;
@@ -25,7 +41,7 @@ begin
 
   if (isLib) then begin
     // remove ld-linux-x86-64.so.2
-    linkResPath:= ExtractFilePath(lpiPath) + 'link.res';
+    linkResPath:= findLinkRes(ExtractFilePath(lpiPath)); // ExtractFilePath(lpiPath) + 'link.res';
     sl := TStringList.Create;
     sl.LoadFromFile(linkResPath);
     for i := 0 to sl.Count - 1 do begin
@@ -55,6 +71,19 @@ begin
   sl.Free;
 end;
 
+procedure removeAllLinkRes(path: string);
+var
+  src: TSearchRec;
+begin
+  if (FindFirst(path + 'link*.res', faAnyFile, src) = 0) then begin
+    repeat
+      if (src.Name = '.') or (src.Name = '..') then Continue;
+      DeleteFile(path + src.Name);
+    until FindNext(src) <> 0;
+    FindClose(src);
+  end;
+end;
+
 procedure doBuild(AProj: string; isAlpine: Boolean);
 var
   src: TSearchRec;
@@ -67,6 +96,8 @@ var
 begin
   cd := GetCurrentDir();
   if (not cd.EndsWith(SPL)) then cd += SPL;
+
+  removeAllLinkRes(cd);
 
   if (AProj <> '') then begin
     lpi := cd + AProj;
@@ -96,7 +127,8 @@ begin
           WriteLn(#27'[31mLink project %s failed.'#27'[0m'.Format([pname]));
         end;
         // clean
-        DeleteFile(ExtractFilePath(lpi) + 'link.res');
+        removeAllLinkRes(cd);
+        // DeleteFile(ExtractFilePath(lpi) + 'link.res');
         DeleteFile(ExtractFilePath(lpi) + 'ppas.sh');
     end else begin
        WriteLn(#27'[31mBuild project %s failed.'#27'[0m'.Format([pname]));
@@ -136,7 +168,8 @@ begin
           WriteLn(#27'[31mLink project %s failed.'#27'[0m'.Format([pname]));
         end;
         // clean
-        DeleteFile(ExtractFilePath(lpi) + 'link.res');
+        removeAllLinkRes(cd);
+        // DeleteFile(ExtractFilePath(lpi) + 'link.res');
         DeleteFile(ExtractFilePath(lpi) + 'ppas.sh');
       end else begin
         WriteLn(#27'[31mBuild project %s failed.'#27'[0m'.Format([pname]));

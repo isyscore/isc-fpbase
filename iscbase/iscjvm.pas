@@ -1,6 +1,7 @@
 unit ISCJVM;
 
 {$mode objfpc}{$H+}
+{$ModeSwitch nestedprocvars}
 
 interface
 
@@ -17,11 +18,13 @@ type
 
 type
   generic TISCJvmExecuteMethod<T> = function (env: PJNIEnv): T;
+  generic TISCNestedJvmExecuteMethod<T> = function (env: PJNIEnv): T is nested;
 
 function ISCJvmPath:string;
-function ISCInitJVM(jvmPath: string; classPath: string): Boolean;
+function ISCInitJVM(jvmPath: string; classPath: string; AXms: string = '16m'; AXmx: string = '80m'; AXss: string = '1m'; AXmn: string = '48m'): Boolean;
 function ISCFiniJVM(): Boolean;
 generic function ISCJVMExecute<T>(block: specialize TISCJvmExecuteMethod<T>; ADefault: T): T;
+generic function ISCJVMExecute<T>(block: specialize TISCNestedJvmExecuteMethod<T>; ADefault: T): T;
 
 var
   _jvm: TJVM;
@@ -50,18 +53,26 @@ begin
   {$ENDIF}
 end;
 
-function createJvm(mj: PJVM; classPath: string): PJNIEnv;
+function createJvm(mj: PJVM; classPath: string; AXms: string;
+  AXmx: string; AXss: string; AXmn: string): PJNIEnv;
 var
   env: PJNIEnv = nil;
   args: JavaVMInitArgs;
-  options: JavaVMOption;
+  options: array[0..4] of JavaVMOption;
   ret: Integer;
 begin
+
+  options[0].optionString:= Pchar('-Djava.class.path=' + classPath);
+  options[1].optionString:= PChar('-Xms' + AXms);
+  options[2].optionString:= PChar('-Xmx' + AXmx);
+  options[3].optionString:= PChar('-Xss' + AXss);
+  options[4].optionString:= PChar('-Xmn' + AXmn);
+
   args.version:= JNI_VERSION_1_6;
-  args.nOptions:= 1;
+  args.nOptions:= 5;
   args.options:= @options;
   args.ignoreUnrecognized:= Pjboolean(0);
-  options.optionString:= Pchar('-Djava.class.path=' + classPath);
+
   ret := jniCreateJavaVM(@(mj^.jvm), @env, @args);
   if (ret < 0) or (env = nil) then begin
     Exit(nil);
@@ -69,7 +80,8 @@ begin
   Exit(env);
 end;
 
-function ISCInitJVM(jvmPath: string; classPath: string): Boolean;
+function ISCInitJVM(jvmPath: string; classPath: string; AXms: string;
+  AXmx: string; AXss: string; AXmn: string): Boolean;
 var
   libJvm: {$IFDEF LINUX}Pointer{$ELSE}TLibHandle{$ENDIF};
 begin
@@ -82,7 +94,7 @@ begin
   libJvm := LoadLibrary(jvmPath);
   jniCreateJavaVM:= TJNICreateJavaVM(GetProcAddress(libJvm, 'JNI_CreateJavaVM'));
   {$ENDIF}
-  _jvm.env:= createJvm(@_jvm, classPath);
+  _jvm.env:= createJvm(@_jvm, classPath, AXms, AXmx, AXss, AXmn);
   Exit(_jvm.env <> nil);
 end;
 
@@ -96,6 +108,22 @@ begin
 end;
 
 generic function ISCJVMExecute<T>(block: specialize TISCJvmExecuteMethod<T>; ADefault: T): T;
+var
+  jvmPtr: PJavaVM;
+  env: PJNIEnv;
+begin
+  jvmPtr:= _jvm.jvm;
+  env := _jvm.env;
+  if (env <> nil) then begin
+    jvmPtr^^.AttachCurrentThread(jvmPtr, @env, nil);
+    Result := block(env);
+    jvmPtr^^.DetachCurrentThread(jvmPtr);
+  end else begin
+    Result:= ADefault;
+  end;
+end;
+
+generic function ISCJVMExecute<T>(block: specialize TISCNestedJvmExecuteMethod<T>; ADefault: T): T;
 var
   jvmPtr: PJavaVM;
   env: PJNIEnv;
