@@ -5,9 +5,10 @@ unit testNetwork;
 interface
 
 uses
-  Classes, SysUtils, pingsend, tlntsend;
+  Classes, SysUtils, pingsend, tlntsend, ISCHttp;
 
 procedure doTestNetwork();
+procedure doTestHttp();
 
 implementation
 
@@ -23,6 +24,14 @@ begin
   t.Logout;
   t.Free;
   WriteLn('telnet: ' + BoolToStr(ret, 'true', 'false'));
+end;
+
+procedure doTestHttp();
+var
+  h : string;
+begin
+  h := ISCHttpGet('1.com');
+  WriteLn(h);
 end;
 
 end.

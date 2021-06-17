@@ -10,6 +10,7 @@ uses
 const
   MIME_JSON = 'application/json; charset=utf-8';
   MIME_HTML = 'text/html; charset=utf-8';
+  MIME_TEXT = 'text/plain; charset=utf-8';
   MIME_CSS = 'text/css; charset=utf-8';
   MIME_JAVASCRIPT = 'application/x-javascript; charset=utf-8';
   MIME_JPEG = 'image/jpeg';

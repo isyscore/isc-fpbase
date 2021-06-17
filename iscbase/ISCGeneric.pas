@@ -551,7 +551,7 @@ end;
 
 generic function ISCTakeLast<T>(arr: specialize TFPGArray<T>; n: Integer): specialize TFPGArray<T>;
 var
-  ret: specialize TFPGArray<T>;
+  ret: specialize TFPGArray<T> = nil;
   i: Integer;
 begin
   SetLength(ret, n);

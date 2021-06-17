@@ -27,7 +27,7 @@ begin
   end;
 end;
 
-function getBasePack(AOutPath: string): Boolean;
+function getBasePack(AOutPath: string; AUnzip: Boolean): Boolean;
 var
   AZipPath: string;
   hasError: Boolean = False;
@@ -48,6 +48,8 @@ begin
   if (not FileExists(AZipPath)) then begin
     Exit(False);
   end;
+
+  if (not AUnzip) then Exit(True);
 
   // unzip
   with TUnZipper.Create do begin
@@ -85,17 +87,12 @@ begin
     FindClose(src);
   end;
 
-  if (list.Count <> 0) then begin
-    WriteLn(#27'[33mUpgrading ISCBASE package...'#27'[0m');
-
-    if (not getBasePack(cd)) then begin
-      WriteLn(#27'[31mget ISCBASE package failed, upgrade aborted.'#27'[0m');
-      WriteLn('');
-    end else begin
-      WriteLn(#27'[32mUpgrade ISCBase package completed.'#27'[0m');
-    end;
+  WriteLn(#27'[33mUpgrading ISCBASE package...'#27'[0m');
+  if (not getBasePack(cd, list.Count > 0)) then begin
+    WriteLn(#27'[31mget ISCBASE package failed, upgrade aborted.'#27'[0m');
+    WriteLn('');
   end else begin
-    WriteLn(#27'[31mPath: "%s" is not contain any fpc projects.'#27'[0m'.Format([cd]));
+    WriteLn(#27'[32mUpgrade ISCBase package completed.'#27'[0m');
   end;
   list.Free;
 end;

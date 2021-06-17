@@ -120,7 +120,12 @@ begin
           changeAlpinePpasSh(lpi);
         end;
         // run ppas.sh
+        {$IFDEF WINDOWS}
+        retStat:= RunCommandInDir(cd, 'cmd', ['/C', 'ppas.bat'], outstr, [poWaitOnExit, poUsePipes]);
+        {$ELSE}
         retStat := RunCommandInDir(cd, 'sh', ['ppas.sh'], outstr, [poWaitOnExit, poUsePipes]);
+        {$ENDIF}
+        WriteLn(outstr);
         if (retStat) then begin
           WriteLn(#27'[32mLink project %s completed.'#27'[0m'.Format([pname]));
         end else begin
@@ -129,7 +134,7 @@ begin
         // clean
         removeAllLinkRes(cd);
         // DeleteFile(ExtractFilePath(lpi) + 'link.res');
-        DeleteFile(ExtractFilePath(lpi) + 'ppas.sh');
+        DeleteFile(ExtractFilePath(lpi) + {$IFDEF WINDOWS}'ppas.bat'{$ELSE}'ppas.sh'{$ENDIF});
     end else begin
        WriteLn(#27'[31mBuild project %s failed.'#27'[0m'.Format([pname]));
     end;
@@ -161,7 +166,11 @@ begin
           changeAlpinePpasSh(lpi);
         end;
         // run ppas.sh
+        {$IFDEF WINDOWS}
+        retStat:= RunCommandInDir(cd, 'cmd', ['/C', 'ppas.bat'], outstr, [poWaitOnExit, poUsePipes]);
+        {$ELSE}
         retStat := RunCommandInDir(cd, 'sh', ['ppas.sh'], outstr, [poWaitOnExit, poUsePipes]);
+        {$ENDIF}
         if (retStat) then begin
           WriteLn(#27'[32mLink project %s completed.'#27'[0m'.Format([pname]));
         end else begin
@@ -170,7 +179,7 @@ begin
         // clean
         removeAllLinkRes(cd);
         // DeleteFile(ExtractFilePath(lpi) + 'link.res');
-        DeleteFile(ExtractFilePath(lpi) + 'ppas.sh');
+        DeleteFile(ExtractFilePath(lpi) + {$IFDEF WINDOWS}'ppas.bat'{$ELSE}'ppas.sh'{$ENDIF});
       end else begin
         WriteLn(#27'[31mBuild project %s failed.'#27'[0m'.Format([pname]));
       end;

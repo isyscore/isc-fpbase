@@ -133,12 +133,13 @@ begin
 end;
 
 generic function ISCThreadExecute<E, U>(AData: E; AMethod: specialize TISCThreadMethod<E, U>; AOnTerminate: specialize TISCTerminateMethod<U>; APriority: TThreadPriority): TThread;
+var
+  th: specialize TInnerThread<E, U>;
 begin
-  with specialize TInnerThread<E, U>.Create(AData, AMethod, AOnTerminate) do begin
-    Priority := APriority;
-    Result := Self;
-    Start();
-  end;
+  th := specialize TInnerThread<E, U>.Create(AData, AMethod, AOnTerminate);
+  th.Priority := APriority;
+  th.Start();
+  Exit(th);
 end;
 
 generic function ISCThreadExecute<E, U>(AData: E; AMethod: specialize TISCNestedThreadMethod<E, U>; AOnTerminate: specialize TISCNestedTerminateMethod<U> = nil; APriority: TThreadPriority = tpNormal): TThread;
@@ -152,12 +153,13 @@ begin
 end;
 
 generic function ISCThreadExecuteGUI<E, U>(AData: E; AMethod: specialize TISCThreadMethodGUI<E, U>; AOnTerminate: specialize TISCTerminateMethodGUI<U>; APriority: TThreadPriority): TThread;
+var
+  th: specialize TInnerThreadGUI<E, U>;
 begin
-  with specialize TInnerThreadGUI<E, U>.Create(AData, AMEthod, AOnTerminate) do begin
-    Priority := APriority;
-    Result := Self;
-    Start();
-  end;
+  th := specialize TInnerThreadGUI<E, U>.Create(AData, AMEthod, AOnTerminate);
+  th.Priority := APriority;
+  th.Start();
+  Exit(th);
 end;
 
 end.

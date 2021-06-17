@@ -124,10 +124,10 @@ begin
   sl.Add('    && apk add --update --no-cache ttf-dejavu fontconfig \');
   sl.Add('    && rm -rf /var/cache/apk/*');
   sl.Add('');
-  sl.Add('ARG app=isc-%s-service'.Format([AProjName]));
+  sl.Add('ARG app=%s'.Format([AProjName]));
   sl.Add('ARG path=/home/${app}');
   if (AJava) then begin
-    sl.Add('ENV LD_LIBRARY_PATH=${path}:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/server');
+    sl.Add('ENV LD_LIBRARY_PATH=${path}:${path}/ld:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/server');
   end else begin
     sl.Add('ENV LD_LIBRARY_PATH=${path}:${path}/ld');
   end;
@@ -135,6 +135,7 @@ begin
   sl.Add('COPY files ${path}/files');
   sl.Add('COPY ld ${path}/ld');
   sl.Add('COPY %s ${path}'.Format([AProjName]));
+  sl.Add('COPY application.yml ${path}');
   sl.Add('WORKDIR ${path}');
   sl.Add('');
   sl.Add('ENTRYPOINT ["/usr/bin/dumb-init", "--"]');
@@ -247,6 +248,7 @@ begin
   sl.Add('');
   sl.Add('server:');
   sl.Add('  port: 8080');
+  sl.Add('  queue-size: 1000');
   sl.Add('');
   sl.Add('spring:');
   sl.Add('  profile:');
@@ -561,7 +563,7 @@ begin
   end else if (AProjType = 'console') then begin
     sl.Add('  cmem, Classes, SysUtils, untFunc;');
   end else if (AProjType = 'web') then begin
-    sl.Add('  cmem, fpwebfile, fphttpapp, HTTPDefs, httproute, fphttp, ISCConsts, untRoute;');
+    sl.Add('  cmem, Classes, SysUtils, fpwebfile, fphttpapp, HTTPDefs, httproute, fphttp, ISCConsts, untRoute;');
   end else if (AProjType = 'jni') then begin
     sl.Add('  cmem, Classes, SysUtils, dynlibs, ISCJNI, untFunc;');
   end;
@@ -580,9 +582,9 @@ begin
     sl.Add('end.');
   end else if (AProjType = 'web') then begin
     sl.Add('begin');
-    sl.Add('  RegisterFileLocation(''static'', FILES_DIR);');
+    sl.Add('  loadYamlConfig();');
     sl.Add('  HTTPRouter.RegisterRoute(''/'', rmAll, @index);');
-    sl.Add('  Application.QueueSize:= 1000;');
+    sl.Add('  Application.QueueSize:= QUEUE_SIZE;');
     sl.Add('  Application.Port := SERVER_PORT;');
     sl.Add('  Application.Threaded := True;');
     sl.Add('  Application.Initialize;');
@@ -618,7 +620,7 @@ begin
   sl.Add('interface');
   sl.Add('');
   sl.Add('uses');
-  sl.Add('  Classes, SysUtils, HTTPDefs;');
+  sl.Add('  Classes, SysUtils, HTTPDefs, ISCHttp;');
   sl.Add('');
   sl.Add('procedure index(Areq: TRequest; AResp: TResponse);');
   sl.Add('');
@@ -627,7 +629,7 @@ begin
   sl.Add('procedure index(Areq: TRequest; AResp: TResponse);');
   sl.Add('begin');
   sl.Add('  AResp.Code := 200;');
-  sl.Add('  AResp.ContentType := ''text/html; charset=utf-8'';');
+  sl.Add('  AResp.ContentType := MIME_HTML;');
   sl.Add('  AResp.Content := ''<html><body>Hello</body></html>'';');
   sl.Add('end;');
   sl.Add('');
