@@ -39,6 +39,7 @@ end;
 
 procedure doDoctor();
 var
+  hasAdditionalInfo: Boolean = False;
   newVersion: Boolean;
   fpcInstalled, fpcSrcInstalled, lazarusInstalled: Boolean;
   stOmniPascal, stFreePascalToolkit, stPascalFormatter, stNativeDebug, stCodeLLDB,
@@ -89,6 +90,22 @@ begin
   WriteLn('%s VSCode: Bookmarks'.format([codeStatusToStr(stBookmarks)]));
   WriteLn('%s VSCode: BracketPairColorizer'.format([codeStatusToStr(stBracketPairColorizer)]));
   WriteLn('');
+
+  if (not fpcInstalled) then begin
+    WriteLn(#27'[33m[!]'#27'[0m FPC must be found at: ' + FPC_CMD);
+    hasAdditionalInfo := True;
+  end;
+  if (not fpcSrcInstalled) then begin
+    WriteLn(#27'[33m[!]'#27'[0m FPC-SRC must be found at path: ' + FREEPASCAL_SOURCE_PATH);
+    hasAdditionalInfo:= True;
+  end;
+  if (not lazarusInstalled) then begin
+    WriteLn(#27'[33m[!]'#27'[0m Lazarus must be found at path: ' + LAZARUS_PATH);
+    hasAdditionalInfo:= True;
+  end;
+  if (hasAdditionalInfo) then begin
+    WriteLn('');
+  end;
 end;
 
 procedure doDoctorFix();

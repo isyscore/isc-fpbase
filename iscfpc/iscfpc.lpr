@@ -85,7 +85,8 @@ begin
     begin
       oProj:= ParamStr(2);
       doOcean(oProj);
-    end
+    end;
+  '--version': WriteLn(VERSION);
   else printHelp();
   end;
 end.

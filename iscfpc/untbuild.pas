@@ -84,6 +84,57 @@ begin
   end;
 end;
 
+const
+  CN_VALUE = '<CustomOptions Value="-Cn"/>';
+
+procedure addLpiCn(lpi: string);
+var
+  i: Integer;
+  changed: Boolean = False;
+begin
+  // add lpi -Cn
+  with TStringList.Create do begin
+    LoadFromFile(lpi);
+    if (not Text.Contains(CN_VALUE)) then begin
+      for i := 0 to Count - 1 do begin
+        if (Strings[i].Contains('<Other>')) then begin
+          Insert(i + 1, '      ' + CN_VALUE);
+          changed:= True;
+          Break;
+        end;
+      end;
+    end;
+    if (changed) then begin
+      SaveToFile(lpi);
+    end;
+    Free;
+  end;
+end;
+
+procedure removeLpiCn(lpi: string);
+var
+  i: Integer;
+  changed: Boolean = False;
+begin
+  // remove lpi -Cn
+  with TStringList.Create do begin
+    LoadFromFile(lpi);
+    if (Text.Contains(CN_VALUE)) then begin
+      for i := 0 to Count - 1 do begin
+        if (Strings[i].Contains(CN_VALUE)) then begin
+          Delete(i);
+          changed:= True;
+          Break;
+        end;
+      end;
+    end;
+    if (changed) then begin
+      SaveToFile(lpi);
+    end;
+    Free;
+  end;
+end;
+
 procedure doBuild(AProj: string; isAlpine: Boolean);
 var
   src: TSearchRec;
@@ -109,33 +160,39 @@ begin
     pname:= ExtractFileName(lpi);
     WriteLn(#27'[33mBuilding project: %s'#27'[0m'.Format([pname]));
     // compile
-    retStat := RunCommandInDir(cd, LAZ_BUILD_PATH, [lpi], outstr, [poWaitOnExit, poUsePipes]);
-    WriteLn(outstr);
+    removeLpiCn(lpi);
+    if (isAlpine) then begin
+      // add -Cn
+      addLpiCn(lpi);
+    end;
+    retStat := RunCommandInDir(cd, LAZ_BUILD_PATH, [lpi], outstr, [poWaitOnExit, poUsePipes, poStderrToOutPut]);
     if (retStat) then begin
       WriteLn(#27'[32mBuild project %s completed.'#27'[0m'.Format([pname]));
-        // link
-        if (isAlpine) then begin
-          // change link.res and ppas.sh
-          changeAlpineLinkRes(lpi);
-          changeAlpinePpasSh(lpi);
-        end;
+      // only ALPINE needs to manual link
+      if (isAlpine) then begin
+        // change link.res and ppas.sh
+        changeAlpineLinkRes(lpi);
+        changeAlpinePpasSh(lpi);
         // run ppas.sh
         {$IFDEF WINDOWS}
-        retStat:= RunCommandInDir(cd, 'cmd', ['/C', 'ppas.bat'], outstr, [poWaitOnExit, poUsePipes]);
+        retStat:= RunCommandInDir(cd, 'cmd', ['/C', 'ppas.bat'], outstr, [poWaitOnExit, poUsePipes, poStderrToOutPut]);
         {$ELSE}
-        retStat := RunCommandInDir(cd, 'sh', ['ppas.sh'], outstr, [poWaitOnExit, poUsePipes]);
+        retStat := RunCommandInDir(cd, 'sh', ['ppas.sh'], outstr, [poWaitOnExit, poUsePipes, poStderrToOutPut]);
         {$ENDIF}
-        WriteLn(outstr);
         if (retStat) then begin
           WriteLn(#27'[32mLink project %s completed.'#27'[0m'.Format([pname]));
         end else begin
+          WriteLn(outstr);
           WriteLn(#27'[31mLink project %s failed.'#27'[0m'.Format([pname]));
         end;
+        removeLpiCn(lpi);
         // clean
         removeAllLinkRes(cd);
         // DeleteFile(ExtractFilePath(lpi) + 'link.res');
         DeleteFile(ExtractFilePath(lpi) + {$IFDEF WINDOWS}'ppas.bat'{$ELSE}'ppas.sh'{$ENDIF});
+        end;
     end else begin
+       WriteLn(outstr);
        WriteLn(#27'[31mBuild project %s failed.'#27'[0m'.Format([pname]));
     end;
     Exit;
@@ -155,8 +212,11 @@ begin
       pname:= ExtractFileName(lpi);
       WriteLn(#27'[33mBuilding project: %s'#27'[0m'.Format([pname]));
       // compile
-      retStat := RunCommandInDir(cd, LAZ_BUILD_PATH, [lpi], outstr, [poWaitOnExit, poUsePipes]);
-      WriteLn(outstr);
+      removeLpiCn(lpi);
+      if (isAlpine) then begin
+        addLpiCn(lpi);
+      end;
+      retStat := RunCommandInDir(cd, LAZ_BUILD_PATH, [lpi], outstr, [poWaitOnExit, poUsePipes, poStderrToOutPut]);
       if (retStat) then begin
         WriteLn(#27'[32mBuild project %s completed.'#27'[0m'.Format([pname]));
         // link
@@ -164,23 +224,26 @@ begin
           // change link.res and ppas.sh
           changeAlpineLinkRes(lpi);
           changeAlpinePpasSh(lpi);
+          // run ppas.sh
+          {$IFDEF WINDOWS}
+          retStat:= RunCommandInDir(cd, 'cmd', ['/C', 'ppas.bat'], outstr, [poWaitOnExit, poUsePipes, poStderrToOutPut]);
+          {$ELSE}
+          retStat := RunCommandInDir(cd, 'sh', ['ppas.sh'], outstr, [poWaitOnExit, poUsePipes, poStderrToOutPut]);
+          {$ENDIF}
+          if (retStat) then begin
+            WriteLn(#27'[32mLink project %s completed.'#27'[0m'.Format([pname]));
+          end else begin
+            WriteLn(outstr);
+            WriteLn(#27'[31mLink project %s failed.'#27'[0m'.Format([pname]));
+          end;
+          removeLpiCn(lpi);
+          // clean
+          removeAllLinkRes(cd);
+          // DeleteFile(ExtractFilePath(lpi) + 'link.res');
+          DeleteFile(ExtractFilePath(lpi) + {$IFDEF WINDOWS}'ppas.bat'{$ELSE}'ppas.sh'{$ENDIF});
         end;
-        // run ppas.sh
-        {$IFDEF WINDOWS}
-        retStat:= RunCommandInDir(cd, 'cmd', ['/C', 'ppas.bat'], outstr, [poWaitOnExit, poUsePipes]);
-        {$ELSE}
-        retStat := RunCommandInDir(cd, 'sh', ['ppas.sh'], outstr, [poWaitOnExit, poUsePipes]);
-        {$ENDIF}
-        if (retStat) then begin
-          WriteLn(#27'[32mLink project %s completed.'#27'[0m'.Format([pname]));
-        end else begin
-          WriteLn(#27'[31mLink project %s failed.'#27'[0m'.Format([pname]));
-        end;
-        // clean
-        removeAllLinkRes(cd);
-        // DeleteFile(ExtractFilePath(lpi) + 'link.res');
-        DeleteFile(ExtractFilePath(lpi) + {$IFDEF WINDOWS}'ppas.bat'{$ELSE}'ppas.sh'{$ENDIF});
       end else begin
+        WriteLn(outstr);
         WriteLn(#27'[31mBuild project %s failed.'#27'[0m'.Format([pname]));
       end;
     end;

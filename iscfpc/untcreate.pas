@@ -214,7 +214,7 @@ begin
     sl.Add('    </Linking>');
   end;
   sl.Add('    <Other>');
-  sl.Add('      <CustomOptions Value="-Cn"/>');
+  // sl.Add('      <CustomOptions Value="-Cn"/>');
   sl.Add('      <CompilerMessages>');
   sl.Add('        <IgnoredMessages idx6058="True" idx3124="True" idx3123="True"/>');
   sl.Add('      </CompilerMessages>');
@@ -559,13 +559,13 @@ begin
   sl.Add('uses');
   sl.Add('  {$IFNDEF WINDOWS}cthreads,{$ENDIF}');
   if (AProjType = 'lib') then begin
-    sl.Add('  cmem, Classes, SysUtils, dynlibs, untFunc;');
+    sl.Add('  cmem, Classes, SysUtils, untFunc;');
   end else if (AProjType = 'console') then begin
     sl.Add('  cmem, Classes, SysUtils, untFunc;');
   end else if (AProjType = 'web') then begin
     sl.Add('  cmem, Classes, SysUtils, fpwebfile, fphttpapp, HTTPDefs, httproute, fphttp, ISCConsts, untRoute;');
   end else if (AProjType = 'jni') then begin
-    sl.Add('  cmem, Classes, SysUtils, dynlibs, ISCJNI, untFunc;');
+    sl.Add('  cmem, Classes, SysUtils, ISCJNI, untFunc;');
   end;
   sl.Add('');
 
