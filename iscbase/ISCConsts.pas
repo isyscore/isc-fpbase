@@ -15,11 +15,11 @@ type
   TCustomConfigMethod = procedure (AYaml: TYamlFile);
 
 var
-  MODULE_NAME: string;
-  SERVICE_NAME: string;
-  SERVER_PORT: Integer;
-  QUEUE_SIZE: Integer;
-  ACTIVE_PROFILE: string;
+  MODULE_NAME: string = '';
+  SERVICE_NAME: string = '';
+  SERVER_PORT: Integer = 80;
+  QUEUE_SIZE: Integer = 1000;
+  ACTIVE_PROFILE: string = '';
 
   WORK_DIR: string;
   FILES_DIR: string;
@@ -37,16 +37,19 @@ procedure loadYamlConfig(cfg: TCustomConfigMethod = nil);
 
 implementation
 
+uses
+  ISCLogger;
+
 procedure readYaml(y: TYamlFile; cfg: TCustomConfigMethod);
 begin
-  MODULE_NAME:= y.GetValue('api-moudle', '');
-  SERVER_PORT:= StrToIntDef(y.GetValue('server.port', '80'), 80);
-  QUEUE_SIZE := StrToIntDef(y.GetValue('server.queue-size', '1000'), 1000);
-  SERVICE_NAME:= y.GetValue('spring.application.name', '');
+  MODULE_NAME:= y.GetValue('api-moudle', MODULE_NAME);
+  SERVER_PORT:= StrToIntDef(y.GetValue('server.port', SERVER_PORT.ToString), SERVER_PORT);
+  QUEUE_SIZE := StrToIntDef(y.GetValue('server.queue-size', QUEUE_SIZE.ToString), QUEUE_SIZE);
+  SERVICE_NAME:= y.GetValue('spring.application.name', SERVICE_NAME);
   if (SERVICE_NAME = '') then begin
-    SERVICE_NAME:= y.GetValue('fpweb.application.name', '');
+    SERVICE_NAME:= y.GetValue('fpweb.application.name', SERVICE_NAME);
   end;
-  LOGGER_LEVEL:= y.GetValue('logging.level.root', 'info');
+  LOGGER_LEVEL:= y.GetValue('logging.level.root', LOGGER_LEVEL);
   if (cfg <> nil) then begin
     cfg(y);
   end;
@@ -58,15 +61,20 @@ var
 begin
   y := TYamlFile.Create();
   y.LoadFromFile(APath);
-  ACTIVE_PROFILE := y.GetValue('spring.profiles.active', '');
+  ACTIVE_PROFILE := y.GetValue('spring.profiles.active', ACTIVE_PROFILE);
   if (ACTIVE_PROFILE = '') then begin
-    ACTIVE_PROFILE:= y.GetValue('fpweb.profiles.active', '');
+    ACTIVE_PROFILE:= y.GetValue('fpweb.profiles.active', ACTIVE_PROFILE);
   end;
   readYaml(y, cfg);
   if(ACTIVE_PROFILE <> '') then begin
     // override sub profile
-    APPLICATION_YML_PATH:= APPLICATION_YML_PATH.Replace('application.yml', 'application-' +  ACTIVE_PROFILE + '.yml');
-    if (FileExists(APPLICATION_YML_PATH)) then begin
+    if (FileExists(WORK_DIR + 'application-' + ACTIVE_PROFILE + '.yml')) then begin
+      APPLICATION_YML_PATH := WORK_DIR + 'application-' + ACTIVE_PROFILE + '.yml';
+      y.LoadFromFile(APPLICATION_YML_PATH);
+      readYaml(y, cfg);
+    end;
+    if (FileExists(CONFIG_DIR + 'application-' + ACTIVE_PROFILE + '.yml')) then begin
+      APPLICATION_YML_PATH := CONFIG_DIR + 'application-' + ACTIVE_PROFILE + '.yml';
       y.LoadFromFile(APPLICATION_YML_PATH);
       readYaml(y, cfg);
     end;
@@ -76,13 +84,20 @@ end;
 
 procedure loadYamlConfig(cfg: TCustomConfigMethod);
 begin
-  APPLICATION_YML_PATH:= WORK_DIR + 'application.yml';
-  if (not FileExists(APPLICATION_YML_PATH)) then begin
-    APPLICATION_YML_PATH:= CONFIG_DIR + 'application.yml';
-  end;
-  if (FileExists(APPLICATION_YML_PATH)) then begin
+  if (FileExists(WORK_DIR + 'application.yml')) then begin
+    APPLICATION_YML_PATH:= WORK_DIR + 'application.yml';
     preloadYaml(APPLICATION_YML_PATH, cfg);
   end;
+  if (FileExists(CONFIG_DIR + 'application.yml')) then begin
+    APPLICATION_YML_PATH:= CONFIG_DIR + 'application.yml';
+    preloadYaml(APPLICATION_YML_PATH, cfg);
+  end;
+
+  TLogger.info('main', 'MODULE_NAME = ' + MODULE_NAME);
+  TLogger.info('main', 'SERVICE_NAME = ' + SERVICE_NAME);
+  TLogger.info('main', 'SERVER_PORT = ' + SERVER_PORT.ToString);
+  TLogger.info('main', 'QUEUE_SIZE = ' + QUEUE_SIZE.ToString);
+  TLogger.info('main', 'ACTIVE_PROFILE = ' + ACTIVE_PROFILE);
 end;
 
 initialization
@@ -121,8 +136,6 @@ initialization
   if (not DirectoryExists(DATA_DIR)) then begin
     ForceDirectories(DATA_DIR);
   end;
-
-
 
 end.
 
