@@ -199,8 +199,8 @@ begin
   sl.Add('      <Filename Value="%s"/>'.format([AProjName]));
   sl.Add('    </Target>');
   sl.Add('    <SearchPaths>');
-  sl.Add('      <IncludeFiles Value="$(ProjOutDir);iscbase;iscbase/database;iscbase/database/component;iscbase/database/core;iscbase/database/dbc;iscbase/database/parsesql;iscbase/database/plain;iscbase/network;iscbase/script;"/>');
-  sl.Add('      <OtherUnitFiles Value="%s;src;test;iscbase;iscbase/database;iscbase/database/component;iscbase/database/core;iscbase/database/dbc;iscbase/database/parsesql;iscbase/database/plain;iscbase/network;iscbase/script;iscbase/coroutine;iscbase/websocket"/>'.format([getLazarusUnitPaths()]));
+  sl.Add('      <IncludeFiles Value="$(ProjOutDir);iscbase;iscbase/database;iscbase/database/component;iscbase/database/core;iscbase/database/dbc;iscbase/database/parsesql;iscbase/database/plain;iscbase/network;iscbase/script;iscbase/lazutils"/>');
+  sl.Add('      <OtherUnitFiles Value="src;test;iscbase;iscbase/database;iscbase/database/component;iscbase/database/core;iscbase/database/dbc;iscbase/database/parsesql;iscbase/database/plain;iscbase/network;iscbase/script;iscbase/coroutine;iscbase/websocket;iscbase/lazutils"/>');
   sl.Add('      <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>');
   sl.Add('    </SearchPaths>');
   if (AProjType = 'lib') or (AProjType = 'jni') then begin
