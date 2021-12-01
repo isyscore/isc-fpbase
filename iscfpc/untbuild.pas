@@ -165,7 +165,7 @@ begin
       // add -Cn
       addLpiCn(lpi);
     end;
-    retStat := RunCommandInDir(cd, LAZ_BUILD_PATH, [lpi], outstr, [poWaitOnExit, poUsePipes, poStderrToOutPut]);
+    retStat := RunCommandInDir(cd, LAZ_BUILD_PATH, ['-B', lpi], outstr, [poWaitOnExit, poUsePipes, poStderrToOutPut]);
     if (retStat) then begin
       WriteLn(#27'[32mBuild project %s completed.'#27'[0m'.Format([pname]));
       // only ALPINE needs to manual link
@@ -216,7 +216,7 @@ begin
       if (isAlpine) then begin
         addLpiCn(lpi);
       end;
-      retStat := RunCommandInDir(cd, LAZ_BUILD_PATH, [lpi], outstr, [poWaitOnExit, poUsePipes, poStderrToOutPut]);
+      retStat := RunCommandInDir(cd, LAZ_BUILD_PATH, ['-B', lpi], outstr, [poWaitOnExit, poUsePipes, poStderrToOutPut]);
       if (retStat) then begin
         WriteLn(#27'[32mBuild project %s completed.'#27'[0m'.Format([pname]));
         // link
