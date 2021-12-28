@@ -5,7 +5,7 @@ unit ISCHttp;
 interface
 
 uses
-  Classes, SysUtils, fphttpclient, fgl, process, HTTPDefs;
+  Classes, SysUtils, fphttpclient, fgl, process, HTTPDefs, BaseUnix, Sockets;
 
 const
   MIME_JSON = 'application/json; charset=utf-8';
@@ -22,26 +22,61 @@ type
   TISCDownloadProgress = procedure (AUrl: string; ASavePath: string; ACurrentProgress: Int64; ATotalLength: Int64);
   TISCHttpCallback = procedure(AUrl: string; ACode: Integer; ABody: string; ACookie: specialize TFPGMap<string, string>; AError: string);
 
-function ISCHttpGet(AUrl: string; AHeaders: specialize TFPGMap<string, string> = nil): string;
-function ISCHttpPost(AUrl: string; AParam: string; AHeaders: specialize TFPGMap<string, string> = nil): string;
-function ISCHttpPost(AUrl: string; AParam: specialize TFPGMap<String, String>; AHeaders: specialize TFPGMap<string, string> = nil): string;
+  hostent = record
+    h_name: PChar;      {/* official name of host *}
+    h_aliases: PPChar;  {* alias list *}
+    h_addrtype: cInt;   {* host address type *}
+    h_length: cInt;     {* length of address *}
+    h_addr_list: PPChar;{* list of addresses from name server *}
+  end;
+  THostEnt = hostent;
+  PHostEnt = ^THostEnt;
+
+function gethostbyname(name: PChar): PHostEnt; cdecl; external;
+function inet_ntoa(__in:in_addr):Pchar;cdecl;external;
+
+function ISCHttpGet(AUrl: string; AHeaders: specialize TFPGMap<string, string> = nil; ALookup: Boolean = False): string;
+function ISCHttpPost(AUrl: string; AParam: string; AHeaders: specialize TFPGMap<string, string> = nil; ALookup: Boolean = False): string;
+function ISCHttpPost(AUrl: string; AParam: specialize TFPGMap<String, String>; AHeaders: specialize TFPGMap<string, string> = nil; ALookup: Boolean = False): string;
 
 function ISCHttpRequest(AUrl: string; AMethod: THttpMethod;
   AQueryParam: string = '';
   ADataParam: string = '{}';
   AHeaders: specialize TFPGMap<string, string> = nil;
-  ACalllback: TISCHttpCallback = nil
+  ACalllback: TISCHttpCallback = nil;
+  ALookup: Boolean = False
 ): string;
 
-function ISCDownloadFile(AUrl: string; ASavePath: string; AHeaders: specialize TFPGMap<string, string> = nil; AProgress: TISCDownloadProgress = nil): Boolean;
-function ISCGetLocalIPMac(out AIp: string; out AMacAddr: string): Boolean;
+function ISCDownloadFile(AUrl: string; ASavePath: string; AHeaders: specialize TFPGMap<string, string> = nil; AProgress: TISCDownloadProgress = nil; ALookup: Boolean = False): Boolean;
 
+function ISCGetLocalIPMac(out AIp: string; out AMacAddr: string): Boolean;
 procedure ISCAllowCors(AReq: TRequest; AResp: TResponse);
+function ISCLookUp(ADomain: string): string;
 
 implementation
 
 uses
-  ISCGeneric;
+  ISCGeneric, ISCLogger;
+
+function urlToLookupUrl(AUrl: string): string;
+var
+  u: string;
+  ip: string;
+  retU: string;
+begin
+  retU:= AUrl;
+  u := AUrl;
+  if (u.Contains('://')) then begin
+    u := u.Substring(u.IndexOf('://') + 3);
+  end;
+  u := LeftStr(u, u.IndexOfAny([':', '/', '?']));
+  ip := ISCLookUp(u);
+  if (ip <> '0.0.0.0') then begin
+    retU:= AUrl.Replace(u, ip);
+  end;
+  TLogger.info('lookup', 'url:%s, rep:%s'.Format([AUrl, retU]));
+  Result := retU;
+end;
 
 procedure ISCAllowCors(AReq: TRequest; AResp: TResponse);
 var
@@ -53,11 +88,25 @@ begin
   AResp.SetCustomHeader('Access-Control-Allow-Credentials', 'true');
 end;
 
+function ISCLookUp(ADomain: string): string;
+var
+  host: PHostEnt;
+  addr: in_addr;
+begin
+  host:= gethostbyname(PChar(ADomain));
+  if (not Assigned(host)) then begin
+    Exit('0.0.0.0');
+  end;
+  addr.s_addr:= PCardinal(host^.h_addr_list[0])^;
+  Result := NetAddrToStr(addr);
+end;
+
 function ISCHttpRequest(AUrl: string; AMethod: THttpMethod;
   AQueryParam: string = '';
   ADataParam: string = '{}';
   AHeaders: specialize TFPGMap<string, string> = nil;
-  ACalllback: TISCHttpCallback = nil
+  ACalllback: TISCHttpCallback = nil;
+  ALookup: Boolean = False
 ): string;
 var
   http: TFPHTTPClient;
@@ -68,6 +117,11 @@ var
   retCookie: specialize TFPGMap<string, string> = nil;
 begin
   Result := '';
+
+  if (ALookup) then begin
+    AUrl:= urlToLookupUrl(AUrl);
+  end;
+
   http := TFPHTTPClient.Create(nil);
   try
     if (AHeaders <> nil) then begin
@@ -116,12 +170,17 @@ begin
   end;
 end;
 
-function ISCHttpGet(AUrl: string; AHeaders: specialize TFPGMap<string, string>): string;
+function ISCHttpGet(AUrl: string; AHeaders: specialize TFPGMap<string, string>; ALookup: Boolean = False): string;
 var
   http: TFPHTTPClient;
   i: Integer;
 begin
   Result := '';
+
+  if (ALookup) then begin
+    AUrl:= urlToLookupUrl(AUrl);
+  end;
+
   http := TFPHTTPClient.Create(nil);
   try
     if (AHeaders <> nil) then begin
@@ -133,18 +192,26 @@ begin
     try
       Result := http.Get(AUrl);
     except
+      on E: Exception do begin
+        TLogger.error('HTTP', 'ISCHttpGet: ' + AUrl + ', ' + E.Message);
+      end;
     end;
   finally
     http.Free;
   end;
 end;
 
-function ISCHttpPost(AUrl: string; AParam: string; AHeaders: specialize TFPGMap<string, string>): string;
+function ISCHttpPost(AUrl: string; AParam: string; AHeaders: specialize TFPGMap<string, string>; ALookup: Boolean = False): string;
 var
   http: TFPHTTPClient;
   i: Integer;
 begin
   Result := '';
+
+  if (ALookup) then begin
+    AUrl:= urlToLookupUrl(AUrl);
+  end;
+
   http := TFPHTTPClient.Create(nil);
   try
     http.AddHeader('Content-Type','application/json; charset=UTF-8');
@@ -159,6 +226,9 @@ begin
     try
       Result := http.Post(AUrl);
     except
+      on E: Exception do begin
+        TLogger.error('HTTP', 'ISCHttpPost: ' + AUrl + ', ' + E.Message);
+      end;
     end;
   finally
     http.RequestBody.Free;
@@ -187,11 +257,17 @@ begin
   Exit(ret);
 end;
 
-function ISCHttpPost(AUrl: string; AParam: specialize TFPGMap<String, String>; AHeaders: specialize TFPGMap<string, string>): string;
+function ISCHttpPost(AUrl: string; AParam: specialize TFPGMap<String, String>; AHeaders: specialize TFPGMap<string, string>; ALookup: Boolean = False): string;
 var
   http: TFPHTTPClient;
   i: Integer;
 begin
+  Result := '';
+
+  if (ALookup) then begin
+    AUrl:= urlToLookupUrl(AUrl);
+  end;
+
   http := TFPHTTPClient.Create(nil);
   try
     http.AllowRedirect:= True;
@@ -203,6 +279,9 @@ begin
     try
       Result := http.FormPost(AUrl, ParamToRequestQueryString(AParam));
     except
+      on E: Exception do begin
+        TLogger.error('HTTP', 'ISCHttpPost: ' + AUrl + ', ' + E.Message);
+      end;
     end;
   finally
     http.Free;
@@ -228,13 +307,17 @@ type
   end;
 
 function ISCDownloadFile(AUrl: string; ASavePath: string; AHeaders: specialize
-  TFPGMap<string, string>; AProgress: TISCDownloadProgress): Boolean;
+  TFPGMap<string, string>; AProgress: TISCDownloadProgress; ALookup: Boolean = False): Boolean;
 var
   http: TFPHTTPClient;
   evt: TInnerDownloadEvent;
   i: Integer;
   ret: Boolean = False;
 begin
+  if (ALookup) then begin
+    AUrl:= urlToLookupUrl(AUrl);
+  end;
+
   http := TFPHTTPClient.Create(nil);
   evt := TInnerDownloadEvent.Create(AUrl, ASavePath, AProgress);
   http.OnDataReceived:= @evt.OnData;
